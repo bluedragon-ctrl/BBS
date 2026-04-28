@@ -2,6 +2,7 @@
 // Reads from engine/codex.js (persistent across runs) + data tables.
 
 import { isKnown, knownIds, summary } from '../engine/codex.js';
+import { escapeHtml, formatSpellCost, formatStatLine } from './util.js';
 
 let deps = null;            // { data, activeScreen, returnTo }
 let currentTab = 'monsters';
@@ -125,10 +126,7 @@ function formatRow(entry, known) {
   }
   if (currentTab === 'spells') {
     if (!known) return `<span class="codex-name">???.SPL</span>`;
-    const cost = [
-      entry.cost?.mp ? `${entry.cost.mp} MP` : '',
-      entry.cost?.conn ? `${entry.cost.conn} CONN` : '',
-    ].filter(Boolean).join(' / ') || '—';
+    const cost = formatSpellCost(entry);
     return `<span class="codex-name school-${entry.school}">${escapeHtml(entry.name)}</span>` +
            `<span class="codex-stats">${entry.school}</span>` +
            `<span class="codex-stats">${cost}</span>`;
@@ -170,15 +168,12 @@ function formatInspect(e) {
     if (e.ascii?.length) lines.push(...e.ascii, '');
     lines.push(`<span class="row-name team-enemy">${escapeHtml(e.name)}</span>`);
     lines.push(`HP   ${e.stats?.hp ?? '?'} / ${e.stats?.maxHp ?? '?'}`);
-    lines.push(`INT ${e.stats?.int ?? 0}  ATK ${e.stats?.atk ?? 0}  DEF ${e.stats?.def ?? 0}  SPD ${e.stats?.spd ?? 0}`);
+    lines.push(formatStatLine({ stats: e.stats, statuses: [] }));
     if (e.ai) lines.push('', `AI: ${e.ai}`);
     return lines.join('\n');
   }
   if (currentTab === 'spells') {
-    const cost = [
-      e.cost?.mp ? `${e.cost.mp} MP` : '',
-      e.cost?.conn ? `${e.cost.conn} CONN` : '',
-    ].filter(Boolean).join(' / ') || '—';
+    const cost = formatSpellCost(e);
     const fx = (e.effects || []).map(eff => formatEffect(eff)).join('\n  ');
     const lines = [
       `<span class="row-name school-${e.school}">${escapeHtml(e.name)}</span>`,
@@ -235,9 +230,6 @@ function formatEffect(eff) {
   return `${eff.type}${eff.amount ? ' ' + eff.amount : ''} → ${eff.target || ''}`;
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-}
 
 // ---------- Input ----------
 

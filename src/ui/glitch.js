@@ -13,6 +13,8 @@ const SCRAMBLE_GLYPHS = '▓░▒█@#%&*$?!=+<>/\\|~^';
 const BOX_CORRUPT     = '╳╫╪▓░▒┼╋';
 const NAME_CORRUPT    = '▓░▒%@#?*';
 
+import { sleep } from './util.js';
+
 const PRIMITIVES = ['scrambleText', 'dropChars', 'tearLine', 'colorSwap', 'corruptBorders'];
 
 // Per-tier *permanent* substitution probability for typewriter and monster
@@ -106,8 +108,6 @@ export function applyConnTier(conn) {
 
 // ---------- Primitives ----------
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
 function pickGlyphs(n, pool) {
   let out = '';
   for (let i = 0; i < n; i++) out += pool[Math.floor(Math.random() * pool.length)];
@@ -125,51 +125,51 @@ function textNodesIn(el) {
   return result;
 }
 
-async function scrambleText(target, intensity = 0.4, durationMs = 160) {
+async function mutateAndRestore(target, intensity, durationMs, mutate) {
   if (!target || target._glxBusy) return;
   target._glxBusy = true;
-  const nodes = textNodesIn(target);
-  if (!nodes.length) { target._glxBusy = false; return; }
-  const originals = nodes.map(n => n.nodeValue);
-  // Mutate each node: replace ~intensity fraction of non-space chars.
-  const frac = Math.max(0.05, Math.min(0.9, intensity));
-  for (let i = 0; i < nodes.length; i++) {
-    const s = originals[i];
-    const chars = s.split('');
-    for (let j = 0; j < chars.length; j++) {
-      if (chars[j] === ' ' || chars[j] === '\n') continue;
-      if (Math.random() < frac) chars[j] = SCRAMBLE_GLYPHS[Math.floor(Math.random() * SCRAMBLE_GLYPHS.length)];
+  try {
+    const nodes = textNodesIn(target);
+    if (!nodes.length) return;
+    const originals = nodes.map(n => n.nodeValue);
+    for (let i = 0; i < nodes.length; i++) {
+      nodes[i].nodeValue = mutate(originals[i], intensity);
     }
-    nodes[i].nodeValue = chars.join('');
+    await sleep(durationMs);
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].parentNode) nodes[i].nodeValue = originals[i];
+    }
+  } finally {
+    target._glxBusy = false;
   }
-  await sleep(durationMs);
-  for (let i = 0; i < nodes.length; i++) {
-    if (nodes[i].parentNode) nodes[i].nodeValue = originals[i];
-  }
-  target._glxBusy = false;
 }
 
-async function dropChars(target, intensity = 0.3, durationMs = 140) {
-  if (!target || target._glxBusy) return;
-  target._glxBusy = true;
-  const nodes = textNodesIn(target);
-  if (!nodes.length) { target._glxBusy = false; return; }
-  const originals = nodes.map(n => n.nodeValue);
+function scrambleString(s, intensity) {
+  const frac = Math.max(0.05, Math.min(0.9, intensity));
+  const chars = s.split('');
+  for (let j = 0; j < chars.length; j++) {
+    if (chars[j] === ' ' || chars[j] === '\n') continue;
+    if (Math.random() < frac) chars[j] = SCRAMBLE_GLYPHS[Math.floor(Math.random() * SCRAMBLE_GLYPHS.length)];
+  }
+  return chars.join('');
+}
+
+function dropString(s, intensity) {
   const frac = Math.max(0.05, Math.min(0.7, intensity));
-  for (let i = 0; i < nodes.length; i++) {
-    const s = originals[i];
-    const chars = s.split('');
-    for (let j = 0; j < chars.length; j++) {
-      if (chars[j] === ' ' || chars[j] === '\n') continue;
-      if (Math.random() < frac) chars[j] = ' ';
-    }
-    nodes[i].nodeValue = chars.join('');
+  const chars = s.split('');
+  for (let j = 0; j < chars.length; j++) {
+    if (chars[j] === ' ' || chars[j] === '\n') continue;
+    if (Math.random() < frac) chars[j] = ' ';
   }
-  await sleep(durationMs);
-  for (let i = 0; i < nodes.length; i++) {
-    if (nodes[i].parentNode) nodes[i].nodeValue = originals[i];
-  }
-  target._glxBusy = false;
+  return chars.join('');
+}
+
+function scrambleText(target, intensity = 0.4, durationMs = 160) {
+  return mutateAndRestore(target, intensity, durationMs, scrambleString);
+}
+
+function dropChars(target, intensity = 0.3, durationMs = 140) {
+  return mutateAndRestore(target, intensity, durationMs, dropString);
 }
 
 async function tearLine(target, intensity = 0.5, durationMs = 180) {

@@ -6,6 +6,7 @@ import { weightedPick, pick } from '../engine/rng.js';
 import { evalExpr } from '../engine/expr.js';
 import { markKnown } from '../engine/codex.js';
 import { showTerminalSequence } from './terminal.js';
+import { sleep, escapeHtml, formatTokens, countBy } from './util.js';
 
 let deps = null;
 // deps = {
@@ -22,7 +23,7 @@ function modal() {
   return document.getElementById('node-modal');
 }
 
-function showNodeModal({ title, flavor, choices, onPick }) {
+export function showNodeModal({ title, flavor, choices, onPick }) {
   return new Promise(resolve => {
     const m = modal();
     const titleEl = document.getElementById('node-modal-title');
@@ -202,10 +203,7 @@ export async function showCache() {
   titleEl.textContent = 'CACHE';
   const dirHash = (Math.floor(rng() * 0xFFFF)).toString(16).padStart(4, '0');
   const intro = `DIR: /tmp/dump.${dirHash}\n\n`;
-  bodyEl.textContent = intro + rows.map(r => {
-    if (r.kind === 'select') return `  [${r.key}]  ${r.label.padEnd(18)} [readable]`;
-    return `  -    ${r.label.padEnd(18)} ${r.tag}`;
-  }).join('\n');
+  redraw(bodyEl, intro, rows);
 
   const actions = document.createElement('div');
   actions.className = 'modal-actions';
@@ -255,7 +253,7 @@ export async function showCache() {
       deps.log(`> ${drop.spell.name} added to loadout.`);
     } else if (drop.kind === 'tokens') {
       run.tokens = (run.tokens || 0) + drop.amount;
-      deps.log(`> +${drop.amount} TOKEN${drop.amount === 1 ? '' : 'S'}.`);
+      deps.log(`> +${formatTokens(drop.amount)}.`);
     }
     deps.persistRun();
     await sleep(700);
@@ -366,8 +364,7 @@ export async function showShop() {
   function inventoryLine() {
     const list = run.player.loadout.consumables || [];
     if (!list.length) return '';
-    const counts = {};
-    for (const id of list) counts[id] = (counts[id] || 0) + 1;
+    const counts = countBy(list);
     const parts = Object.entries(counts).map(([id, n]) => {
       const it = deps.data.item(id);
       return `${it ? it.name : id}×${n}`;
@@ -379,13 +376,13 @@ export async function showShop() {
     const baseFlavor = 'A directory of dropped files for sale. All transactions final.';
     const fb = lastFeedback ? `\n\n>> ${lastFeedback.text}` : '';
     const flavor = baseFlavor + fb + inventoryLine();
+    const choices = buildChoices();
     const i = await showNodeModal({
       title: `SHOP — ${run.tokens || 0} tkn`,
       flavor,
-      choices: buildChoices(),
+      choices,
     });
-    if (i >= offered.length) {
-      // LEAVE
+    if (choices[i]?.isLeave) {
       leaving = true;
       break;
     }
@@ -440,7 +437,3 @@ export async function showBossIntro() {
 // utils
 // ====================================================================
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-}
-const sleep = ms => new Promise(r => setTimeout(r, ms));

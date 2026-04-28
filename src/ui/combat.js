@@ -1,11 +1,12 @@
 // Combat UI — renders combatant list / stats / inspect, handles input,
 // drives the engine via getPlayerAction promises.
 
-import { startCombat, runCombat, makePlayerActor, cloneActor } from '../engine/combat.js';
+import { startCombat, runCombat, makePlayerActor, buildEnemyActors } from '../engine/combat.js';
 import { ticksUntilAct, isAlive } from '../engine/scheduler.js';
 import { effectiveStat } from '../engine/atoms.js';
 import { showTerminalSequence } from './terminal.js';
 import { triggerGlitch, corruptName } from './glitch.js';
+import { sleep, escapeHtml, formatSpellCost, countBy, formatStatsBlock, formatStatLine } from './util.js';
 
 let deps = null;          // { data, rng, log, showScreen, activeScreen, getConn, onConnCost }
 let currentCombat = null;
@@ -33,10 +34,10 @@ export function _currentCombat() { return currentCombat; }
 export function _renderAll() { renderAll(); }
 
 // Split a log string into segments, wrapping any combat actor's name
-// in a class corresponding to that actor's team.
-function colorizeActorNames(msg) {
-  if (typeof msg !== 'string' || !currentCombat) return msg;
-  const actors = [...currentCombat.actors].sort((a, b) => b.name.length - a.name.length);
+// in a class corresponding to that actor's team. Pure — takes the actor list explicitly.
+function colorizeActorNames(msg, allActors) {
+  if (typeof msg !== 'string' || !allActors?.length) return msg;
+  const actors = [...allActors].sort((a, b) => b.name.length - a.name.length);
   const segments = [];
   let cursor = 0;
   while (cursor < msg.length) {
@@ -64,20 +65,15 @@ export async function enterCombat({ enemies = ['mon_glyph_wraith'], player = nul
   if (!player) player = makePlayerActor();
 
   const conn = deps.getConn?.() ?? 1;
-  const enemyActors = enemies.map((id, i) => {
-    const def = deps.data.monster(id);
-    if (!def) throw new Error(`Unknown monster ${id}`);
-    const actor = cloneActor(def, { id: `${id}__${i}`, team: 'enemy' });
-    // Snapshot the BBS's view of this monster's name. Worse connection at
-    // spawn = more characters arrive wrong. Stable for the fight.
-    actor.name = corruptName(actor.name, conn);
-    return actor;
-  });
+  const enemyActors = buildEnemyActors(deps.data, enemies);
+  // Snapshot the BBS's view of each name. Worse connection at spawn =
+  // more characters arrive wrong. Stable for the fight.
+  for (const a of enemyActors) a.name = corruptName(a.name, conn);
 
   currentCombat = startCombat({
     player, enemies: enemyActors,
     data: deps.data, rng: deps.rng,
-    log: msg => deps.log(colorizeActorNames(msg)),
+    log: msg => deps.log(colorizeActorNames(msg, currentCombat?.actors)),
     onConnChange: (delta) => {
       deps.onConnChange?.(delta);
       if (delta < 0) connDrainedThisTurn += -delta;
@@ -128,6 +124,7 @@ export async function enterCombat({ enemies = ['mon_glyph_wraith'], player = nul
 // ---------- Engine bridge ----------
 
 function handleGetPlayerAction(_actor) {
+  if (resolvePlayerAction) console.warn('overlapping getPlayerAction — previous resolver dropped');
   renderAll();
   uiState = 'idle';
   setPrompt('Your turn — [A]ttack [C]ast [I]tem [W]ait [X]Inspect [F]lee');
@@ -281,14 +278,11 @@ function openSpellModal() {
     li.className = `school-${sp.school}`;
     if (!enabled) li.classList.add('disabled');
     const key = String.fromCharCode(49 + i); // '1', '2', '3'...
-    const costParts = [];
-    if (sp.cost?.mp)   costParts.push(`${sp.cost.mp} MP`);
-    if (sp.cost?.conn) costParts.push(`${sp.cost.conn} CONN`);
     li.innerHTML = `
       <span class="spell-key">[${key}]</span>
       <span class="spell-name">${sp.name}</span>
       <span class="spell-school">${sp.school}</span>
-      <span class="spell-cost">${costParts.join(' / ') || '—'}</span>
+      <span class="spell-cost">${formatSpellCost(sp)}</span>
     `;
     li.dataset.spellId = spellId;
     li.dataset.key = key;
@@ -370,8 +364,7 @@ function openItemModal() {
     return;
   }
   // Group by item id with counts.
-  const counts = {};
-  list.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
+  const counts = countBy(list);
   const ids = Object.keys(counts);
   ids.forEach((id, i) => {
     const item = deps.data.item(id);
@@ -566,11 +559,7 @@ function renderCombatList() {
 
 function statusChipHtml(s) {
   const k = s.def.kind || 'neutral';
-  return `<span class="status-chip kind-${k}">${escapeText(s.def.shortName || s.def.id)}:${s.duration}</span>`;
-}
-
-function escapeText(s) {
-  return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  return `<span class="status-chip kind-${k}">${escapeHtml(s.def.shortName || s.def.id)}:${s.duration}</span>`;
 }
 
 function renderStats() {
@@ -578,14 +567,7 @@ function renderStats() {
   const player = currentCombat.actors.find(a => a.isPlayer);
   const body = document.querySelector('section[data-screen="combat"] .stats-body');
   if (!body || !player) return;
-  const s = player.stats;
-  const lines = [
-    `HP   ${s.hp} / ${s.maxHp}`,
-    `MP   ${s.mp} / ${s.maxMp}`,
-    `INT  ${effectiveStat(player, 'int')}   ATK ${effectiveStat(player, 'atk')}`,
-    `DEF  ${effectiveStat(player, 'def')}   SPD ${effectiveStat(player, 'spd')}`,
-  ];
-  let html = lines.map(escapeText).join('\n');
+  let html = escapeHtml(formatStatsBlock(player));
   if ((player.statuses || []).length) {
     html += '\n\nSTATUS\n  ' + player.statuses.map(statusChipHtml).join(' ');
   }
@@ -606,18 +588,13 @@ function renderInspect() {
     if (def?.ascii?.length) lines.push(...def.ascii, '');
   }
   const teamClass = actor.team === 'player' ? 'team-player' : 'team-enemy';
-  let html = lines.map(escapeText).join('\n');
+  let html = lines.map(escapeHtml).join('\n');
   if (lines.length) html += '\n';
-  html += `<span class="row-name ${teamClass}">${escapeText(actor.name)}</span>\n`;
-  const statLines = [
-    `HP   ${actor.stats.hp} / ${actor.stats.maxHp}`,
-  ];
+  html += `<span class="row-name ${teamClass}">${escapeHtml(actor.name)}</span>\n`;
+  const statLines = [`HP   ${actor.stats.hp} / ${actor.stats.maxHp}`];
   if ((actor.stats.maxMp || 0) > 0) statLines.push(`MP   ${actor.stats.mp} / ${actor.stats.maxMp}`);
-  statLines.push(
-    `INT ${effectiveStat(actor, 'int')}  ATK ${effectiveStat(actor, 'atk')}  ` +
-    `DEF ${effectiveStat(actor, 'def')}  SPD ${effectiveStat(actor, 'spd')}`
-  );
-  html += statLines.map(escapeText).join('\n');
+  statLines.push(formatStatLine(actor));
+  html += statLines.map(escapeHtml).join('\n');
   if ((actor.statuses || []).length) {
     html += '\n\n' + actor.statuses.map(statusChipHtml).join(' ');
   }
@@ -635,4 +612,3 @@ function setPrompt(text) {
   }
 }
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));

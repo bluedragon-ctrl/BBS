@@ -1,6 +1,7 @@
 // Map UI — renders current node + immediate next-layer choices, handles input.
 
 import { NODE_GLYPH, NODE_LABEL, NODE_FLAVOR } from '../engine/map.js';
+import { formatStatsBlock } from './util.js';
 
 let deps = null;
 let run = null;             // shared run state object from game.js
@@ -193,16 +194,9 @@ function renderEndArt(node) {
 function renderStats() {
   const body = document.querySelector('section[data-screen="map"] .stats-body');
   if (!body || !run.player) return;
-  const p = run.player;
-  const lines = [
-    `HP   ${p.stats.hp} / ${p.stats.maxHp}`,
-    `MP   ${p.stats.mp} / ${p.stats.maxMp}`,
-    `INT  ${p.stats.int}   ATK ${p.stats.atk}`,
-    `DEF  ${p.stats.def}   SPD ${p.stats.spd}`,
-    '',
-    `TOKENS  ${run.tokens || 0}`,
-  ];
-  body.textContent = lines.join('\n');
+  body.textContent = formatStatsBlock(run.player, {
+    extra: ['', `TOKENS  ${run.tokens || 0}`],
+  });
 }
 
 function renderInspect() {

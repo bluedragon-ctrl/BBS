@@ -8,8 +8,17 @@ export async function loadData() {
   const fetched = await Promise.all(
     FILES.map(name =>
       fetch(`data/${name}.json?_=${cacheBust}`)
-        .then(r => r.ok ? r.json() : [])
-        .catch(() => [])
+        .then(r => {
+          if (!r.ok) {
+            console.warn(`data/${name}.json: HTTP ${r.status}`);
+            return [];
+          }
+          return r.json();
+        })
+        .catch(err => {
+          console.warn(`data/${name}.json: load failed`, err);
+          return [];
+        })
     )
   );
 

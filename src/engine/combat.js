@@ -19,14 +19,22 @@ export function cloneActor(def, opts = {}) {
     id: opts.id || def.id,
     name: opts.name || def.name,
     team: opts.team || 'enemy',
-    isPlayer: !!opts.isPlayer,
-    defId: opts.isPlayer ? null : def.id,
+    isPlayer: false,
+    defId: def.id,
     stats: { ...def.stats },
     statuses: [],
     energy: opts.energy ?? 0,
     dead: false,
     loadout: opts.loadout || null,
   };
+}
+
+export function buildEnemyActors(data, ids) {
+  return ids.map((id, i) => {
+    const def = data.monster(id);
+    if (!def) throw new Error(`Unknown monster ${id}`);
+    return cloneActor(def, { id: `${id}__${i}`, team: 'enemy' });
+  });
 }
 
 export function makePlayerActor(opts = {}) {
