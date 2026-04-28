@@ -2,7 +2,7 @@
 
 import {
   makeContext, executeAtoms,
-  fireStatusHooks, tickStatusDurations,
+  fireHooks, tickStatusDurations,
 } from './atoms.js';
 import { evalExpr } from './expr.js';
 import { weightedPick } from './rng.js';
@@ -70,14 +70,10 @@ export function startCombat({ player, enemies = [], allies = [], data, rng, log,
     onConnChange: onConnChange || null,
   };
 
-  // Fire onCombatStart for monsters that declare it
+  // Fire onSpawn for every actor (statuses + monster passives + future wearables).
   for (const actor of combat.actors) {
-    if (!actor.defId) continue;
-    const def = data.monster(actor.defId);
-    const hooks = def?.onCombatStart;
-    if (hooks?.length) {
-      runEffectsAsActor(actor, hooks, combat, { target: player });
-    }
+    const ctx = buildCtxFor(actor, combat, { target: player });
+    fireHooks(actor, 'onSpawn', ctx, { target: player });
   }
   return combat;
 }
@@ -186,6 +182,8 @@ async function executePlayerAction(action, actor, combat, hooks) {
       ? combat.actors.find(a => a.id === action.targetId)
       : null;
     combat.logFn(`${actor.name} casts ${spell.name}.`);
+    const castCtx = buildCtxFor(actor, combat, { target });
+    fireHooks(actor, 'onCast', castCtx, { target });
     runEffectsAsActor(actor, spell.effects, combat, { target });
     return;
   }
@@ -217,14 +215,15 @@ function reapDead(combat) {
   for (const actor of combat.actors) {
     if (actor.dead) continue;
     if ((actor.stats.hp ?? 0) <= 0) {
-      actor.dead = true;
       combat.logFn(`${actor.name} falls.`);
-      if (actor.defId) {
+      if (actor.defId && actor.team === 'enemy') {
         // Codex: monsters identified on kill (player's enemies only).
-        if (actor.team === 'enemy') markKnown('monsters', actor.defId);
-        const def = combat.data.monster(actor.defId);
-        if (def?.onDeath?.length) runEffectsAsActor(actor, def.onDeath, combat);
+        markKnown('monsters', actor.defId);
       }
+      // Fire onDeath before flagging dead, so the hook walker doesn't skip the actor.
+      const ctx = buildCtxFor(actor, combat);
+      fireHooks(actor, 'onDeath', ctx);
+      actor.dead = true;
     }
   }
 }
@@ -273,7 +272,7 @@ export async function runCombat(combat, hooks = {}) {
 
       // 2. Status onTurnStart (DOTs etc.)
       const ctxStart = buildCtxFor(actor, combat);
-      fireStatusHooks(actor, 'onTurnStart', ctxStart);
+      fireHooks(actor, 'onTurnStart', ctxStart);
       reapDead(combat);
       checkEndConditions(combat);
       if (combat.ended) break;
@@ -296,7 +295,7 @@ export async function runCombat(combat, hooks = {}) {
       // 4. onTurnEnd + duration tick
       if (isAlive(actor)) {
         const ctxEnd = buildCtxFor(actor, combat);
-        fireStatusHooks(actor, 'onTurnEnd', ctxEnd);
+        fireHooks(actor, 'onTurnEnd', ctxEnd);
         tickStatusDurations(actor, ctxEnd);
       }
       reapDead(combat);

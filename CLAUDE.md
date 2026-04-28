@@ -64,6 +64,7 @@ BBS/
 - **Glitch primitives** go through `triggerGlitch(type, intensity, target)`. Planned types: `scrambleText`, `tearLine`, `colorSwap`, `corruptBorders`, `flicker`. Mark glitchable text elements with `data-glitchable` so the system can find them.
 - **Right column = selection and inspect.** Two roles: idle = show last hovered/selected entity; active selection = chooser for target/spell/item picks. Modals only for things that need overlay focus.
 - **Combatants share one scheduler.** Player, allies, enemies are all actors with `speed` and accumulated `energy`. Same data model on both sides.
+- **Hooks are unified.** `fireHooks(actor, hookName, ctxBase, opts)` walks every hook source attached to an actor — active statuses, equipped wearables (`actor.loadout.equipped[*]`), and the monster passive (`data.monster(actor.defId).hooks`). Same JSON shape everywhere: `hooks: { onX: [atoms] }`. Canonical names: `onSpawn, onTurnStart, onTurnEnd, onApply, onRemove, onDamaged, onDealDamage, onKill, onDeath, onCast`. `ctx.self` is always the hook owner; `opts.target` sets `ctx.target` (defaults to self) — for `onDamaged` it's the attacker, for `onDealDamage`/`onKill` the victim, for `onCast` the spell target. Atoms fire hooks at the semantically-owning moment (e.g. the `damage` atom fires `onDamaged`/`onDealDamage`/`onKill`); combat fires lifecycle hooks (`onSpawn`, turn boundaries, `onDeath`). Add new hook fire points by calling `fireHooks` from the atom or combat moment that owns the trigger — never invent a parallel walker.
 - **`window.netro`** exposes `state`, `setConn`, `triggerGlitch` for devtools/preview-eval debugging. Add new entries here when introducing systems worth poking at runtime.
 
 ## Working rule
@@ -79,6 +80,7 @@ BBS/
 5. ~~Map generator + node navigation + suspend save/load~~ ✅
 6. ~~Codex screen + identification flow~~ ✅
 7. ~~Special node interactions (shop / cache / shrine / event / boss intro)~~ ✅
+8a. ~~Unified hook system (statuses + wearables + monster passives via `fireHooks`)~~ ✅
 8. **Glitch primitives + ambient connection-driven effects** ← next
 9. Content pass — fill `data/` for the v1 vertical slice
 

@@ -46,14 +46,16 @@ export function makeContext(self, target, opts = {}) {
   });
 
   if (self) {
+    // Getters read this.self dynamically so subCtx = Object.create(ctx); subCtx.self = other
+    // resolves stats against the override (used by fireHooks when a hook fires on a non-self actor).
     for (const k of SHORTCUT_STATS) {
       Object.defineProperty(ctx, k, {
-        get: () => effectiveStat(self, k),
+        get() { return effectiveStat(this.self, k); },
         enumerable: true,
       });
     }
-    Object.defineProperty(ctx, 'MAX_HP', { get: () => self.stats?.maxHp ?? 0, enumerable: true });
-    Object.defineProperty(ctx, 'MAX_MP', { get: () => self.stats?.maxMp ?? 0, enumerable: true });
+    Object.defineProperty(ctx, 'MAX_HP', { get() { return this.self?.stats?.maxHp ?? 0; }, enumerable: true });
+    Object.defineProperty(ctx, 'MAX_MP', { get() { return this.self?.stats?.maxMp ?? 0; }, enumerable: true });
   }
   return ctx;
 }
@@ -143,17 +145,47 @@ export function removeStatusFromActor(actor, idOrTag, ctx) {
   return removed;
 }
 
-export function fireStatusHooks(actor, hookName, ctxBase) {
-  if (!actor?.statuses?.length) return;
-  for (const s of [...actor.statuses]) {
-    const hooks = s.def.hooks?.[hookName];
-    if (!hooks?.length) continue;
+// Unified hook walker — runs `def.hooks[hookName]` atoms from every source attached to actor:
+//   1. Active statuses (actor.statuses[*].def.hooks)
+//   2. Equipped wearables (actor.loadout.equipped[*].hooks) — equip flow lands later, walk is a no-op until then
+//   3. Monster passive (data.monster(actor.defId).hooks) — always-on while alive
+// opts.target overrides ctx.target (default: actor itself). ctx.self is always the hook owner.
+export function fireHooks(actor, hookName, ctxBase, opts = {}) {
+  if (!actor || actor.dead) return;
+  const target = opts.target ?? actor;
+  const sources = [];
+
+  for (const s of actor.statuses ?? []) {
+    const hooks = s.def?.hooks?.[hookName];
+    if (hooks?.length) sources.push(hooks);
+  }
+
+  const equipped = actor.loadout?.equipped;
+  if (equipped) {
+    for (const slot of Object.keys(equipped)) {
+      const item = equipped[slot];
+      const hooks = item?.hooks?.[hookName];
+      if (hooks?.length) sources.push(hooks);
+    }
+  }
+
+  if (actor.defId && ctxBase?.data?.monster) {
+    const def = ctxBase.data.monster(actor.defId);
+    const hooks = def?.hooks?.[hookName];
+    if (hooks?.length) sources.push(hooks);
+  }
+
+  if (!sources.length) return;
+  for (const atoms of sources) {
     const subCtx = Object.create(ctxBase);
     subCtx.self = actor;
-    subCtx.target = actor;
-    executeAtoms(hooks, subCtx);
+    subCtx.target = target;
+    executeAtoms(atoms, subCtx);
   }
 }
+
+// Back-compat alias — existing callers still work; prefer fireHooks for new code.
+export const fireStatusHooks = fireHooks;
 
 // Decrements duration on each status; returns ids that expired (after firing onRemove).
 export function tickStatusDurations(actor, ctx) {
@@ -187,6 +219,14 @@ registerAtom('damage', (atom, ctx) => {
   const dmg = Math.max(0, raw - def);
   t.stats.hp = Math.max(0, (t.stats.hp ?? 0) - dmg);
   ctx.log(`${t.name} takes ${dmg} damage.`);
+  if (dmg > 0) {
+    const attacker = ctx.self;
+    fireHooks(t, 'onDamaged', ctx, { target: attacker || t });
+    if (attacker && attacker !== t) fireHooks(attacker, 'onDealDamage', ctx, { target: t });
+    if ((t.stats.hp ?? 0) <= 0 && attacker && attacker !== t) {
+      fireHooks(attacker, 'onKill', ctx, { target: t });
+    }
+  }
   return { kind: 'damage', target: t.id, amount: dmg, damageType: atom.damageType || 'physical' };
 });
 

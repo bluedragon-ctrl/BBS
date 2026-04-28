@@ -43,5 +43,28 @@
        ]}
     ],
     "loot": []
+  },
+  {
+    "id": "mon_regen_daemon",
+    "name": "REGEN DAEMON",
+    "stats": {"hp": 16, "maxHp": 16, "mp": 0, "maxMp": 0, "spd": 8, "def": 1, "int": 3, "atk": 3},
+    "ascii": [
+      "   .===.   ",
+      "  / +++ \\  ",
+      " | <===> | ",
+      "  \\ +++ /  ",
+      "   '==='   "
+    ],
+    "ai": "aggressive",
+    "hooks": {
+      "onTurnEnd": [
+        {"type": "heal", "target": "self", "amount": "2", "condition": "self.stats.hp < self.stats.maxHp"}
+      ]
+    },
+    "actions": [
+      {"name": "claws at", "weight": 1,
+       "effects": [{"type": "damage", "target": "target", "amount": "1d4+ATK", "damageType": "physical"}]}
+    ],
+    "loot": []
   }
 ]
