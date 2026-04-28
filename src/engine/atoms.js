@@ -3,23 +3,44 @@
 import { evalExpr } from './expr.js';
 import { markKnown } from './codex.js';
 
+// Module-level data reference. Set once at boot via setDataRef(data) so that
+// hook walkers and stat resolvers can look up equipped item defs by id without
+// every call site threading `data` through. Used by allModifiers / fireHooks /
+// effectiveStat when reading actor.loadout.equipped[slot] (which holds ids).
+let _dataRef = null;
+export function setDataRef(data) { _dataRef = data; }
+
+function* equippedDefs(actor) {
+  const equipped = actor?.loadout?.equipped;
+  if (!equipped || !_dataRef?.item) return;
+  for (const slot of Object.keys(equipped)) {
+    const id = equipped[slot];
+    if (!id) continue;
+    const def = _dataRef.item(id);
+    if (def) yield def;
+  }
+}
+
 // ---------- Stat resolution ----------
 
 // Stats are stored on actor.stats with lowercase keys (hp, maxHp, mp, maxMp, int, def, spd, conn, maxConn).
 // Status modifiers: { stat: "DEF", add: 4 } or { stat: "spd", mult: 0.5 } — matched case-insensitively.
+// Equipped wearables contribute the same way via def.modifiers.
 export function effectiveStat(actor, statName) {
   if (!actor) return 0;
   const lower = String(statName).toLowerCase();
   let val = actor.stats?.[lower] ?? 0;
   let mult = 1;
-  for (const s of actor.statuses ?? []) {
-    for (const m of s.def.modifiers ?? []) {
+  const apply = (mods) => {
+    for (const m of mods ?? []) {
       if (String(m.stat || '').toLowerCase() === lower) {
-        if (m.add != null) val += m.add;
+        if (m.add  != null) val += m.add;
         if (m.mult != null) mult *= m.mult;
       }
     }
-  }
+  };
+  for (const s of actor.statuses ?? []) apply(s.def?.modifiers);
+  for (const def of equippedDefs(actor))     apply(def.modifiers);
   return val * mult;
 }
 
@@ -31,11 +52,8 @@ function* allModifiers(actor) {
   for (const s of actor?.statuses ?? []) {
     for (const m of s.def?.modifiers ?? []) yield m;
   }
-  const equipped = actor?.loadout?.equipped;
-  if (equipped) {
-    for (const slot of Object.keys(equipped)) {
-      for (const m of equipped[slot]?.modifiers ?? []) yield m;
-    }
+  for (const def of equippedDefs(actor)) {
+    for (const m of def.modifiers ?? []) yield m;
   }
 }
 
@@ -56,6 +74,9 @@ export function actorHasFlag(actor, name) {
   }
   for (const s of actor?.statuses ?? []) {
     if (Array.isArray(s.def?.flags) && s.def.flags.includes(name)) return true;
+  }
+  for (const def of equippedDefs(actor)) {
+    if (Array.isArray(def.flags) && def.flags.includes(name)) return true;
   }
   return false;
 }
@@ -197,13 +218,9 @@ export function fireHooks(actor, hookName, ctxBase, opts = {}) {
     if (hooks?.length) sources.push(hooks);
   }
 
-  const equipped = actor.loadout?.equipped;
-  if (equipped) {
-    for (const slot of Object.keys(equipped)) {
-      const item = equipped[slot];
-      const hooks = item?.hooks?.[hookName];
-      if (hooks?.length) sources.push(hooks);
-    }
+  for (const def of equippedDefs(actor)) {
+    const hooks = def.hooks?.[hookName];
+    if (hooks?.length) sources.push(hooks);
   }
 
   if (actor.defId && ctxBase?.data?.monster) {

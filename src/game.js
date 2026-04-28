@@ -1,7 +1,7 @@
 // NETROMANCER.BBS — main entry. Wires modules and starts the boot sequence.
 
 import { loadData } from './engine/data.js';
-import { makeContext, executeAtoms } from './engine/atoms.js';
+import { makeContext, executeAtoms, setDataRef } from './engine/atoms.js';
 import { evalExpr } from './engine/expr.js';
 import { makeRng, randomSeed } from './engine/rng.js';
 import {
@@ -11,6 +11,7 @@ import { initCombatUi, enterCombat, _currentCombat, _renderAll } from './ui/comb
 import { initMapUi } from './ui/map.js';
 import { showTerminalSequence } from './ui/terminal.js';
 import { initCodexUi, openCodex } from './ui/codex.js';
+import { initInventoryUi, openInventory } from './ui/inventory.js';
 import { loadCodex, wipeCodex } from './engine/codex.js';
 import { initNodeUi } from './ui/nodes.js';
 import {
@@ -221,6 +222,7 @@ function testEval(expression, ctxOverride = {}) {
 state.seed = randomSeed();
 state.rng = makeRng(state.seed);
 state.data = await loadData();
+setDataRef(state.data);
 loadCodex();
 
 initLog({ getConn: () => state.conn });
@@ -239,17 +241,29 @@ initCombatUi({
 });
 
 initMapUi({
+  data: state.data,
   log: logMessage,
   activeScreen,
   saveAndQuit,
   onChoice: (node) => resolveNode(node),
   openCodex: () => openCodex('map'),
+  openInventory: () => openInventory('map'),
 });
 
 initCodexUi({
   data: state.data,
   activeScreen,
   showScreen: name => { showScreen(name); },
+});
+
+initInventoryUi({
+  data: state.data,
+  rng: state.rng,
+  activeScreen,
+  showScreen: name => { showScreen(name); },
+  getRun: () => state.run,
+  log: logMessage,
+  persistRun,
 });
 
 initNodeUi({
@@ -277,6 +291,8 @@ window.netro = {
     setTier:   (t) => setConn(1 - t / 10 - 0.001),
   },
   data: state.data,
+  openCodex,
+  openInventory,
   cast: testCast,
   eval: testEval,
   combat: testCombat,

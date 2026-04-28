@@ -117,6 +117,42 @@ DEF   2   SPD 10
         </nav>
       </section>
 
+      <!-- INVENTORY SCREEN -->
+      <section data-screen="inventory">
+        <header class="title-bar">
+          <span data-glitchable>NETROMANCER.BBS</span>
+          <span>INVENTORY</span>
+          <span class="inventory-summary"></span>
+          <span class="conn-readout">
+            CONN
+            <span class="conn-bar" aria-label="connection strength"><span class="conn-fill"></span></span>
+            <span class="conn-pct">100%</span>
+          </span>
+        </header>
+
+        <div class="layout">
+          <div class="main-pane">
+            <div class="panel-title" data-glitchable>LOADOUT</div>
+            <div class="inventory-slots"></div>
+            <div class="inventory-hint">[1-5] pick slot · [↑↓] move · [Enter] open · [Esc] back</div>
+          </div>
+          <aside class="right-col">
+            <div class="panel stats-panel inventory-stats-panel">
+              <div class="panel-title" data-glitchable>PLAYER</div>
+              <pre class="stats-body" data-glitchable></pre>
+            </div>
+            <div class="panel inspect-panel">
+              <div class="panel-title" data-glitchable>INSPECT</div>
+              <pre class="inspect-body" data-glitchable>(focus a slot)</pre>
+            </div>
+          </aside>
+        </div>
+
+        <nav class="button-bar">
+          <button data-action="back"><span class="key">[Esc]</span> Back</button>
+        </nav>
+      </section>
+
       <!-- COMBAT SCREEN -->
       <section data-screen="combat">
         <header class="title-bar">

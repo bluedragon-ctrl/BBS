@@ -371,6 +371,11 @@ button:disabled {
   min-height: 0;
 }
 
+/* Combat: shrink stats panel by 1lh, give inspect more room. */
+[data-screen="combat"] .right-col {
+  grid-template-rows: 13lh 1fr;
+}
+
 .panel {
   border: 1px solid var(--chrome);
   padding: 0.3lh 1ch;
@@ -448,6 +453,41 @@ button:disabled {
 .codex-tab .key { color: var(--accent); margin-right: 0.5ch; }
 .codex-tab-count { color: var(--fg-dim); margin-left: 1ch; font-size: 0.85em; }
 .codex-tab.active .codex-tab-count { color: var(--accent); }
+
+/* ===== INVENTORY ===== */
+
+.inventory-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15lh;
+  margin-top: 0.5lh;
+}
+.inventory-slot {
+  display: grid;
+  grid-template-columns: 4ch 10ch 1fr;
+  gap: 1ch;
+  align-items: center;
+  padding: 0.15lh 0.6ch;
+  border: 1px solid var(--chrome);
+  border-left: 2px solid transparent;
+  cursor: pointer;
+}
+.inventory-slot:hover {
+  background: rgba(0, 255, 159, 0.06);
+}
+.inventory-slot.focused {
+  border-left-color: var(--accent);
+  background: rgba(255, 0, 255, 0.12);
+}
+.inventory-slot .slot-key   { color: var(--accent); }
+.inventory-slot .slot-label { color: var(--fg-dim); letter-spacing: 0.1em; }
+.inventory-slot .slot-content .slot-item  { color: var(--fg); }
+.inventory-slot .slot-content .slot-empty { color: var(--dim); font-style: italic; }
+.inventory-hint {
+  margin-top: 0.8lh;
+  color: var(--fg-dim);
+  font-size: 0.9em;
+}
 
 .codex-list {
   display: flex;

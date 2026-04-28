@@ -218,8 +218,43 @@ function formatInspect(e) {
     if (e.codexBlurb) lines.push('', `"${e.codexBlurb}"`);
     return lines.join('\n');
   }
-  if (currentTab === 'wearables' || currentTab === 'consumables') {
-    return `${escapeHtml(e.name || e.id)}\n(item detail formatter pending — step 9)`;
+  if (currentTab === 'wearables') {
+    const lines = [
+      `<span class="row-name">${escapeHtml(e.name)}</span>`,
+      `SLOT:   ${e.slot}`,
+      `TIER:   ${e.tier ?? 1}`,
+    ];
+    if (e.modifiers?.length) {
+      lines.push('', 'MODIFIERS:');
+      for (const m of e.modifiers) lines.push('  ' + formatModifier(m));
+    }
+    if (e.hooks) {
+      const ks = Object.keys(e.hooks).filter(k => e.hooks[k]?.length);
+      if (ks.length) {
+        lines.push('', 'HOOKS:');
+        for (const h of ks) {
+          lines.push(`  ${h}:`);
+          for (const eff of e.hooks[h]) lines.push('    - ' + formatEffect(eff));
+        }
+      }
+    }
+    if (e.blurb) lines.push('', `"${escapeHtml(e.blurb)}"`);
+    return lines.join('\n');
+  }
+  if (currentTab === 'consumables') {
+    const cost = e.cost != null ? `${e.cost} tkn` : '—';
+    const fx = (e.effects || []).map(formatEffect).join('\n  ');
+    const lines = [
+      `<span class="row-name">${escapeHtml(e.name)}</span>`,
+      `TIER:   ${e.tier ?? 1}`,
+      `COST:   ${cost}`,
+      `TARGET: ${e.targeting || 'self'}`,
+      '',
+      'EFFECTS:',
+      `  ${fx || '(none)'}`,
+    ];
+    if (e.blurb) lines.push('', `"${escapeHtml(e.blurb)}"`);
+    return lines.join('\n');
   }
   return escapeHtml(JSON.stringify(e, null, 2));
 }
