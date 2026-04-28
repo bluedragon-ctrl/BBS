@@ -1,0 +1,82 @@
+[
+  {
+    "id": "evt_corrupted_terminal",
+    "title": "CORRUPTED TERMINAL",
+    "description": "Half-decoded process logs hover on the screen. You could try to decompile them — at a cost.",
+    "choices": [
+      {
+        "label": "DECOMPILE",
+        "outcomes": [
+          {
+            "weight": 1,
+            "text": "Sparks. The terminal yields a token.",
+            "effects": [
+              { "type": "damage", "target": "self", "amount": "1d4", "damageType": "magical", "ignoresDef": true },
+              { "type": "addToken", "amount": "1d2" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "LEAVE",
+        "outcomes": [
+          { "weight": 1, "text": "You step back. The flicker continues.", "effects": [] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "evt_backdoor",
+    "title": "BACKDOOR",
+    "description": "An unauthorised port hangs open. Could be a trap, could be a shortcut.",
+    "choices": [
+      {
+        "label": "EXPLOIT",
+        "outcomes": [
+          {
+            "weight": 1,
+            "text": "The port accepts. You slip in.",
+            "effects": [{ "type": "addToken", "amount": "1" }]
+          },
+          {
+            "weight": 1,
+            "text": "Trap. Trace logged.",
+            "effects": [{ "type": "drainConnection", "amount": "4" }]
+          }
+        ]
+      },
+      {
+        "label": "WALK AWAY",
+        "outcomes": [
+          { "weight": 1, "text": "You step back.", "effects": [] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "evt_ghost_user",
+    "title": "GHOST USER",
+    "description": "Another summoner's stale session bleeds through. They left mana behind.",
+    "choices": [
+      {
+        "label": "INHERIT",
+        "outcomes": [
+          {
+            "weight": 1,
+            "text": "You absorb the trace. Power steadies.",
+            "effects": [
+              { "type": "restoreMana", "target": "self", "amount": "5" },
+              { "type": "applyStatus", "effect": "phase", "target": "self", "duration": 1 }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "PURGE",
+        "outcomes": [
+          { "weight": 1, "text": "You wipe the trace. Silence.", "effects": [] }
+        ]
+      }
+    ]
+  }
+]

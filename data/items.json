@@ -1,0 +1,50 @@
+[
+  {
+    "id": "itm_heal_run",
+    "kind": "consumable",
+    "tier": 1,
+    "name": "HEAL.RUN",
+    "cost": 1,
+    "blurb": "Knit flesh briefly.",
+    "targeting": "self",
+    "effects": [
+      { "type": "heal", "target": "self", "amount": "1d6+4" }
+    ]
+  },
+  {
+    "id": "itm_restore_run",
+    "kind": "consumable",
+    "tier": 1,
+    "name": "RESTORE.RUN",
+    "cost": 1,
+    "blurb": "Refill the spell buffer.",
+    "targeting": "self",
+    "effects": [
+      { "type": "restoreMana", "target": "self", "amount": "6" }
+    ]
+  },
+  {
+    "id": "itm_bolt_run",
+    "kind": "consumable",
+    "tier": 2,
+    "name": "BOLT.RUN",
+    "cost": 2,
+    "blurb": "A one-shot ARCANE BOLT.",
+    "targeting": "single",
+    "effects": [
+      { "type": "damage", "target": "target", "amount": "2d6+INT", "damageType": "magical" }
+    ]
+  },
+  {
+    "id": "itm_purge_run",
+    "kind": "consumable",
+    "tier": 2,
+    "name": "PURGE.RUN",
+    "cost": 2,
+    "blurb": "Cleanse a debuff.",
+    "targeting": "self",
+    "effects": [
+      { "type": "cleanse", "target": "self", "kind": "debuff" }
+    ]
+  }
+]

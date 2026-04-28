@@ -1,0 +1,50 @@
+[
+  {
+    "id": "bleed",
+    "name": "BLEEDING",
+    "shortName": "bleed",
+    "kind": "debuff",
+    "tags": ["physical", "dot"],
+    "stackMode": "refresh",
+    "duration": 3,
+    "modifiers": [],
+    "hooks": {
+      "onTurnStart": [
+        {"type": "damage", "target": "self", "amount": "1d3", "ignoresDef": true}
+      ]
+    }
+  },
+  {
+    "id": "stunned",
+    "name": "STUNNED",
+    "shortName": "stun",
+    "kind": "debuff",
+    "tags": ["mental"],
+    "stackMode": "refresh",
+    "duration": 1,
+    "modifiers": [{"stat": "spd", "mult": 0}],
+    "hooks": {}
+  },
+  {
+    "id": "warded",
+    "name": "WARDED",
+    "shortName": "ward",
+    "kind": "buff",
+    "tags": ["arcane"],
+    "stackMode": "refresh",
+    "duration": 4,
+    "modifiers": [{"stat": "def", "add": 4}],
+    "hooks": {}
+  },
+  {
+    "id": "phase",
+    "name": "PHASED",
+    "shortName": "phase",
+    "kind": "buff",
+    "tags": ["arcane"],
+    "stackMode": "refresh",
+    "duration": 2,
+    "modifiers": [],
+    "hooks": {}
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "mon_glyph_wraith",
+    "name": "GLYPH WRAITH",
+    "stats": {"hp": 18, "maxHp": 18, "mp": 0, "maxMp": 0, "spd": 12, "def": 2, "int": 2, "atk": 3},
+    "ascii": [
+      "   .---.   ",
+      "  / o o \\  ",
+      " ( ~~~~~ ) ",
+      "  \\  v  /  ",
+      "   |||||   ",
+      "  /|| ||\\  ",
+      "  '~' '~'  "
+    ],
+    "ai": "aggressive",
+    "actions": [
+      {"name": "tears at", "weight": 3, "effects": [{"type": "damage", "target": "target", "amount": "1d6+ATK", "damageType": "physical"}]},
+      {"name": "fades into the static", "weight": 1, "condition": "self.stats.hp < self.stats.maxHp * 0.5",
+       "effects": [{"type": "applyStatus", "effect": "phase", "target": "self", "duration": 2}]}
+    ],
+    "loot": []
+  },
+  {
+    "id": "mon_watchdog",
+    "name": "WATCHDOG",
+    "stats": {"hp": 12, "maxHp": 12, "mp": 0, "maxMp": 0, "spd": 14, "def": 1, "int": 4, "atk": 2},
+    "ascii": [
+      "    ___    ",
+      "   /o o\\   ",
+      "  ( vvv )  ",
+      "   \\=v=/   ",
+      "    \\_/    ",
+      "    | |    ",
+      "    ^ ^    "
+    ],
+    "ai": "harasser",
+    "actions": [
+      {"name": "snaps at", "weight": 4,
+       "effects": [{"type": "damage", "target": "target", "amount": "1d4+ATK", "damageType": "physical"}]},
+      {"name": "logs a trace from", "weight": 1,
+       "effects": [
+         {"type": "drainConnection", "amount": "1d6+4"}
+       ]}
+    ],
+    "loot": []
+  }
+]

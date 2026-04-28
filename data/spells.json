@@ -1,0 +1,51 @@
+[
+  {
+    "id": "spl_bolt",
+    "name": "ARCANE BOLT",
+    "school": "arcane",
+    "tier": 1,
+    "cost": {"mp": 4},
+    "targeting": "single",
+    "effects": [
+      {"type": "damage", "target": "target", "amount": "2d6+INT", "damageType": "magical"}
+    ],
+    "codexBlurb": "A focused bolt of raw mana."
+  },
+  {
+    "id": "spl_mend",
+    "name": "MEND",
+    "school": "arcane",
+    "tier": 1,
+    "cost": {"mp": 5},
+    "targeting": "self",
+    "effects": [
+      {"type": "heal", "target": "self", "amount": "1d6+INT"}
+    ],
+    "codexBlurb": "Knit flesh with phosphor light."
+  },
+  {
+    "id": "spl_ward",
+    "name": "WARD",
+    "school": "arcane",
+    "tier": 1,
+    "cost": {"mp": 4},
+    "targeting": "self",
+    "effects": [
+      {"type": "applyStatus", "effect": "warded", "target": "self", "duration": 4}
+    ],
+    "codexBlurb": "A glyph hardens around you."
+  },
+  {
+    "id": "spl_corrupt",
+    "name": "CORRUPT.SPL",
+    "school": "hybrid",
+    "tier": 2,
+    "cost": {"mp": 6, "conn": 4},
+    "targeting": "single",
+    "effects": [
+      {"type": "damage", "target": "target", "amount": "1d4+INT", "damageType": "magical"},
+      {"type": "applyStatus", "effect": "bleed", "target": "target", "duration": 3}
+    ],
+    "codexBlurb": "Bend a process to a slow, hemorrhaging halt."
+  }
+]

@@ -1,0 +1,302 @@
+// Combat orchestration — turn loop, AI, end conditions.
+
+import {
+  makeContext, executeAtoms,
+  fireStatusHooks, tickStatusDurations,
+} from './atoms.js';
+import { evalExpr } from './expr.js';
+import { weightedPick } from './rng.js';
+import { markKnown } from './codex.js';
+import {
+  advanceTick, actorsThatCanAct, consumeAction, isAlive,
+  ENERGY_THRESHOLD,
+} from './scheduler.js';
+
+// ---------- Actor construction ----------
+
+export function cloneActor(def, opts = {}) {
+  return {
+    id: opts.id || def.id,
+    name: opts.name || def.name,
+    team: opts.team || 'enemy',
+    isPlayer: !!opts.isPlayer,
+    defId: opts.isPlayer ? null : def.id,
+    stats: { ...def.stats },
+    statuses: [],
+    energy: opts.energy ?? 0,
+    dead: false,
+    loadout: opts.loadout || null,
+  };
+}
+
+export function makePlayerActor(opts = {}) {
+  const player = {
+    id: opts.id || 'player',
+    name: opts.name || 'YOU',
+    team: 'player',
+    isPlayer: true,
+    defId: null,
+    stats: opts.stats || { hp: 24, maxHp: 24, mp: 15, maxMp: 15, int: 6, atk: 4, def: 2, spd: 10 },
+    statuses: [],
+    energy: 0,
+    dead: false,
+    loadout: opts.loadout || { spells: ['spl_bolt', 'spl_mend', 'spl_ward'], consumables: [] },
+  };
+  // Codex: any spell in the starter loadout is "known" — it's already a script in your kit.
+  for (const id of player.loadout.spells || []) markKnown('spells', id);
+  return player;
+}
+
+// ---------- Combat state ----------
+
+export function startCombat({ player, enemies = [], allies = [], data, rng, log, onConnChange }) {
+  const combat = {
+    tick: 0,
+    actors: [player, ...allies, ...enemies],
+    log: [],
+    ended: false,
+    result: null,
+    data,
+    rng,
+    logFn: log || (() => {}),
+    onConnChange: onConnChange || null,
+  };
+
+  // Fire onCombatStart for monsters that declare it
+  for (const actor of combat.actors) {
+    if (!actor.defId) continue;
+    const def = data.monster(actor.defId);
+    const hooks = def?.onCombatStart;
+    if (hooks?.length) {
+      runEffectsAsActor(actor, hooks, combat, { target: player });
+    }
+  }
+  return combat;
+}
+
+// ---------- Helpers ----------
+
+function teamAllies(combat, actor) {
+  return combat.actors.filter(a => isAlive(a) && a.team === actor.team && a !== actor);
+}
+function teamEnemies(combat, actor) {
+  return combat.actors.filter(a => isAlive(a) && a.team !== actor.team);
+}
+
+function buildCtxFor(actor, combat, opts = {}) {
+  return makeContext(actor, opts.target ?? null, {
+    rng: combat.rng,
+    data: combat.data,
+    log: combat.logFn,
+    tick: combat.tick,
+    allEnemies: teamEnemies(combat, actor),
+    allAllies: teamAllies(combat, actor),
+    onConnChange: combat.onConnChange,
+  });
+}
+
+function runEffectsAsActor(actor, atoms, combat, opts = {}) {
+  const ctx = buildCtxFor(actor, combat, opts);
+  return executeAtoms(atoms, ctx);
+}
+
+// ---------- AI ----------
+
+function fireFlavor(actor, combat) {
+  const def = combat.data.monster(actor.defId);
+  if (!def?.flavor?.length) return;
+  for (const f of def.flavor) {
+    if (f.chance != null && combat.rng() >= f.chance) continue;
+    if (f.condition != null) {
+      const ctx = buildCtxFor(actor, combat);
+      if (!evalExpr(f.condition, ctx)) continue;
+    }
+    runEffectsAsActor(actor, f.effects || [], combat);
+  }
+}
+
+function chooseAiAction(actor, combat) {
+  const def = combat.data.monster(actor.defId);
+  if (!def?.actions?.length) return null;
+
+  const eligible = def.actions.filter(a => {
+    if (a.chance != null && combat.rng() >= a.chance) return false;
+    if (a.condition != null) {
+      const ctx = buildCtxFor(actor, combat);
+      if (!evalExpr(a.condition, ctx)) return false;
+    }
+    return true;
+  });
+  if (!eligible.length) return null;
+  return weightedPick(combat.rng, eligible, a => a.weight ?? 1);
+}
+
+function executeAiAction(action, actor, combat) {
+  if (!action) {
+    combat.logFn(`${actor.name} hesitates.`);
+    return;
+  }
+  // AI default target: first living actor on opposing team.
+  const target = combat.actors.find(a => isAlive(a) && a.team !== actor.team);
+  const verb = action.name || 'attacks';
+  if (target && target !== actor) {
+    combat.logFn(`${actor.name} ${verb} ${target.name}.`);
+  } else {
+    combat.logFn(`${actor.name} ${verb}.`);
+  }
+  runEffectsAsActor(actor, action.effects || [], combat, { target });
+}
+
+// ---------- Player actions ----------
+
+const DEFAULT_PLAYER_ATTACK_EFFECTS = [
+  { type: 'damage', target: 'target', amount: '1d6+ATK', damageType: 'physical' },
+];
+
+async function executePlayerAction(action, actor, combat, hooks) {
+  if (!action || action.kind === 'wait') {
+    combat.logFn(`${actor.name} waits.`);
+    return;
+  }
+  if (action.kind === 'flee') {
+    combat.logFn(`${actor.name} disconnects from the node.`);
+    combat.ended = true;
+    combat.result = 'flee';
+    return;
+  }
+  if (action.kind === 'cast') {
+    const spell = combat.data.spell(action.spellId);
+    if (!spell) { combat.logFn(`Unknown spell ${action.spellId}.`); return; }
+    if (spell.cost?.mp && (actor.stats.mp ?? 0) < spell.cost.mp) {
+      combat.logFn(`${actor.name} lacks MP for ${spell.name}.`);
+      return;
+    }
+    if (spell.cost?.mp)   actor.stats.mp -= spell.cost.mp;
+    if (spell.cost?.conn && hooks?.onConnCost) hooks.onConnCost(spell.cost.conn);
+
+    const target = action.targetId
+      ? combat.actors.find(a => a.id === action.targetId)
+      : null;
+    combat.logFn(`${actor.name} casts ${spell.name}.`);
+    runEffectsAsActor(actor, spell.effects, combat, { target });
+    return;
+  }
+  if (action.kind === 'attack') {
+    const target = combat.actors.find(a => a.id === action.targetId);
+    if (!target) { combat.logFn(`${actor.name} has no target.`); return; }
+    combat.logFn(`${actor.name} strikes ${target.name}.`);
+    runEffectsAsActor(actor, DEFAULT_PLAYER_ATTACK_EFFECTS, combat, { target });
+    return;
+  }
+  if (action.kind === 'item') {
+    const item = combat.data.item(action.itemId);
+    if (!item) { combat.logFn(`Unknown item ${action.itemId}.`); return; }
+    const target = action.targetId ? combat.actors.find(a => a.id === action.targetId) : null;
+    combat.logFn(`${actor.name} runs ${item.name}.`);
+    runEffectsAsActor(actor, item.effects || [], combat, { target });
+    // Remove first matching instance from loadout.consumables.
+    const list = actor.loadout?.consumables || [];
+    const idx = list.indexOf(action.itemId);
+    if (idx >= 0) list.splice(idx, 1);
+    return;
+  }
+  combat.logFn(`Unknown action kind: ${action.kind}`);
+}
+
+// ---------- Death + end ----------
+
+function reapDead(combat) {
+  for (const actor of combat.actors) {
+    if (actor.dead) continue;
+    if ((actor.stats.hp ?? 0) <= 0) {
+      actor.dead = true;
+      combat.logFn(`${actor.name} falls.`);
+      if (actor.defId) {
+        // Codex: monsters identified on kill (player's enemies only).
+        if (actor.team === 'enemy') markKnown('monsters', actor.defId);
+        const def = combat.data.monster(actor.defId);
+        if (def?.onDeath?.length) runEffectsAsActor(actor, def.onDeath, combat);
+      }
+    }
+  }
+}
+
+function checkEndConditions(combat) {
+  if (combat.ended) return;
+  const player = combat.actors.find(a => a.isPlayer);
+  if (!player || !isAlive(player)) {
+    combat.ended = true;
+    combat.result = 'defeat';
+    return;
+  }
+  const enemyAlive = combat.actors.some(a => isAlive(a) && a.team === 'enemy');
+  if (!enemyAlive) {
+    combat.ended = true;
+    combat.result = 'victory';
+  }
+}
+
+// ---------- Main loop ----------
+
+const SAFETY_ITERATION_LIMIT = 20000;
+
+export async function runCombat(combat, hooks = {}) {
+  let iterations = 0;
+
+  while (!combat.ended) {
+    if (++iterations > SAFETY_ITERATION_LIMIT) {
+      combat.ended = true;
+      combat.result = 'error';
+      combat.logFn('Combat exceeded iteration limit.');
+      break;
+    }
+
+    advanceTick(combat);
+    if (hooks.onTick) await hooks.onTick(combat);
+    const ready = actorsThatCanAct(combat);
+    if (!ready.length) continue;
+
+    for (const actor of ready) {
+      if (combat.ended) break;
+      if (!isAlive(actor)) continue;
+
+      // 1. Flavor (free, ambient effects, monsters only)
+      if (!actor.isPlayer) fireFlavor(actor, combat);
+
+      // 2. Status onTurnStart (DOTs etc.)
+      const ctxStart = buildCtxFor(actor, combat);
+      fireStatusHooks(actor, 'onTurnStart', ctxStart);
+      reapDead(combat);
+      checkEndConditions(combat);
+      if (combat.ended) break;
+      if (!isAlive(actor)) { consumeAction(actor); continue; }
+
+      // 3. Action
+      if (actor.isPlayer) {
+        const action = (hooks.getPlayerAction
+          ? await hooks.getPlayerAction(actor, combat)
+          : { kind: 'wait' });
+        await executePlayerAction(action, actor, combat, hooks);
+      } else {
+        const action = chooseAiAction(actor, combat);
+        executeAiAction(action, actor, combat);
+      }
+      reapDead(combat);
+      checkEndConditions(combat);
+      if (combat.ended) break;
+
+      // 4. onTurnEnd + duration tick
+      if (isAlive(actor)) {
+        const ctxEnd = buildCtxFor(actor, combat);
+        fireStatusHooks(actor, 'onTurnEnd', ctxEnd);
+        tickStatusDurations(actor, ctxEnd);
+      }
+      reapDead(combat);
+      checkEndConditions(combat);
+
+      consumeAction(actor);
+      if (hooks.onAfterAction) await hooks.onAfterAction(actor, combat);
+    }
+  }
+  return { result: combat.result, combat };
+}
