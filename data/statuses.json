@@ -10,41 +10,155 @@
     "modifiers": [],
     "hooks": {
       "onTurnStart": [
-        {"type": "damage", "target": "self", "amount": "1d3", "ignoresDef": true}
+        {"type": "damage", "target": "self", "amount": "1d3", "ignoresDef": true, "damageType": "physical"}
       ]
-    }
+    },
+    "codexBlurb": "An open wound — every action reopens it."
+  },
+  {
+    "id": "corrupted",
+    "name": "CORRUPTED",
+    "shortName": "corrupt",
+    "kind": "debuff",
+    "tags": ["arcane", "dot", "exploit"],
+    "stackMode": "refresh",
+    "duration": 3,
+    "modifiers": [],
+    "hooks": {
+      "onTurnStart": [
+        {"type": "damage", "target": "self", "amount": "1d4", "ignoresDef": true, "damageType": "magical"},
+        {"type": "drainConnection", "amount": "1"}
+      ]
+    },
+    "codexBlurb": "Hostile bytecode rewriting your stack each cycle."
   },
   {
     "id": "stunned",
     "name": "STUNNED",
     "shortName": "stun",
     "kind": "debuff",
-    "tags": ["mental"],
+    "tags": ["mental", "hard-cc"],
     "stackMode": "refresh",
     "duration": 1,
-    "modifiers": [{"stat": "spd", "mult": 0}],
-    "hooks": {}
+    "flags": ["cannotAct"],
+    "modifiers": [],
+    "hooks": {},
+    "codexBlurb": "Process suspended — kernel waiting on input that never came."
+  },
+  {
+    "id": "slowed",
+    "name": "SLOWED",
+    "shortName": "slow",
+    "kind": "debuff",
+    "tags": ["temporal"],
+    "stackMode": "refresh",
+    "duration": 3,
+    "modifiers": [{"stat": "spd", "mult": 0.5}],
+    "hooks": {},
+    "codexBlurb": "Clock skew — every tick takes two."
+  },
+  {
+    "id": "hasted",
+    "name": "HASTED",
+    "shortName": "haste",
+    "kind": "buff",
+    "tags": ["temporal"],
+    "stackMode": "refresh",
+    "duration": 3,
+    "modifiers": [{"stat": "spd", "mult": 1.5}],
+    "hooks": {},
+    "codexBlurb": "Overclocked — your scheduler runs hot."
   },
   {
     "id": "warded",
     "name": "WARDED",
     "shortName": "ward",
     "kind": "buff",
-    "tags": ["arcane"],
+    "tags": ["arcane", "shield"],
     "stackMode": "refresh",
     "duration": 4,
     "modifiers": [{"stat": "def", "add": 4}],
-    "hooks": {}
+    "hooks": {},
+    "codexBlurb": "A glyph between you and harm."
+  },
+  {
+    "id": "focused",
+    "name": "FOCUSED",
+    "shortName": "focus",
+    "kind": "buff",
+    "tags": ["arcane", "mental"],
+    "stackMode": "refresh",
+    "duration": 4,
+    "modifiers": [{"stat": "int", "add": 2}],
+    "hooks": {},
+    "codexBlurb": "Mind narrowed to a single thread of execution."
+  },
+  {
+    "id": "patched",
+    "name": "PATCHED",
+    "shortName": "patch",
+    "kind": "buff",
+    "tags": ["regen"],
+    "stackMode": "refresh",
+    "duration": 4,
+    "modifiers": [],
+    "hooks": {
+      "onTurnStart": [
+        {"type": "heal", "target": "self", "amount": "1d3", "condition": "self.stats.hp < self.stats.maxHp"}
+      ]
+    },
+    "codexBlurb": "Hot-fix re-knitting your runtime each cycle."
+  },
+  {
+    "id": "vulnerable",
+    "name": "EXPOSED",
+    "shortName": "exposed",
+    "kind": "debuff",
+    "tags": ["amplify"],
+    "stackMode": "refresh",
+    "duration": 3,
+    "modifiers": [{"damageTakenMult": 1.5}],
+    "hooks": {},
+    "codexBlurb": "Defenses unmasked — every blow lands harder."
+  },
+  {
+    "id": "traced",
+    "name": "TRACED",
+    "shortName": "trace",
+    "kind": "debuff",
+    "tags": ["exploit", "amplify"],
+    "stackMode": "refresh",
+    "duration": 4,
+    "modifiers": [{"damageTakenAdd": 1}],
+    "hooks": {},
+    "codexBlurb": "Your packets are being read in the open. Everything stings extra."
+  },
+  {
+    "id": "barbed",
+    "name": "BARBED",
+    "shortName": "barbs",
+    "kind": "buff",
+    "tags": ["arcane", "reactive"],
+    "stackMode": "refresh",
+    "duration": 4,
+    "modifiers": [],
+    "hooks": {
+      "onDamaged": [
+        {"type": "damage", "target": "target", "amount": "2", "ignoresDef": true, "damageType": "physical"}
+      ]
+    },
+    "codexBlurb": "Reactive thorn-glyph — striking you costs the striker."
   },
   {
     "id": "phase",
     "name": "PHASED",
     "shortName": "phase",
     "kind": "buff",
-    "tags": ["arcane"],
+    "tags": ["arcane", "shield"],
     "stackMode": "refresh",
     "duration": 2,
-    "modifiers": [],
-    "hooks": {}
+    "modifiers": [{"damageTakenMult": 0.7}],
+    "hooks": {},
+    "codexBlurb": "Half-out of the call stack — incoming hits glance through you."
   }
 ]

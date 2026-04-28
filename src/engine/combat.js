@@ -3,6 +3,7 @@
 import {
   makeContext, executeAtoms,
   fireHooks, tickStatusDurations,
+  actorHasFlag,
 } from './atoms.js';
 import { evalExpr } from './expr.js';
 import { weightedPick } from './rng.js';
@@ -278,8 +279,10 @@ export async function runCombat(combat, hooks = {}) {
       if (combat.ended) break;
       if (!isAlive(actor)) { consumeAction(actor); continue; }
 
-      // 3. Action
-      if (actor.isPlayer) {
+      // 3. Action — but cannotAct (e.g. stunned) consumes the turn without acting.
+      if (actorHasFlag(actor, 'cannotAct')) {
+        combat.logFn(`${actor.name} cannot act.`);
+      } else if (actor.isPlayer) {
         const action = (hooks.getPlayerAction
           ? await hooks.getPlayerAction(actor, combat)
           : { kind: 'wait' });
