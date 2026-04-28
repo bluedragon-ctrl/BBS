@@ -18,14 +18,45 @@ Open `http://localhost:8123` in a browser. No build step, no npm. Plain ES modul
 
 ```
 BBS/
-  index.html              entry point; all screens declared here as <section data-screen="...">
-  style.css               aesthetic shell — VT323, palette, scanlines, glow, panels, signal bar
-  src/
-    game.js               main entry; screen router, boot sequence, log typewriter, conn scaffolding
-  data/                   (step 2+) — monsters, spells, items, nodes as JSON
-  CLAUDE.md               this file
+  index.html                   entry — all screens as <section data-screen="...">
+  style.css                    VT323, palette, scanlines, glow, panels, signal bar
+  run.bat                      Windows launch script (python http.server)
+  CLAUDE.md                    this file
   .gitignore
-  .claude/launch.json     preview server config
+  .claude/launch.json          preview server profile (port 8765 — auto-port enabled)
+  data/
+    monsters.json              monster defs (stats, ascii, ai, actions, hooks, loot)
+    spells.json                spell defs (school, tier, cost, targeting, effects)
+    statuses.json              status defs (kind, tags, modifiers, hooks, duration)
+    items.json                 wearables + consumables (kind: 'wearable' | 'consumable')
+    events.json                event defs (title, description, choices with weighted outcomes)
+    nodes.json                 (reserved — currently empty; map gen builds nodes procedurally)
+  src/
+    game.js                    main entry — wires modules, runs boot sequence
+    screen.js                  screen router (showScreen / activeScreen)
+    log.js                     log strip — queue + typewriter + flush-on-input
+    run.js                     run lifecycle — startNewRun, continueRun, resolveNode, persistRun
+    engine/
+      rng.js                   Mulberry32 seeded PRNG + weightedPick / pick helpers
+      expr.js                  dice + arithmetic evaluator (NdM, with-binding for stats)
+      atoms.js                 atom registry, executeAtoms, fireHooks, effectiveStat,
+                               damageTakenMods, actorHasFlag, status helpers, setDataRef
+      data.js                  JSON loader with cache-bust, lookup API
+      scheduler.js             NetHack-style energy threshold scheduler
+      combat.js                combat orchestration, AI, end conditions, hook firing
+      map.js                   Slay-the-Spire DAG generator + node type weights
+      save.js                  localStorage suspend (single slot, wiped on load)
+      codex.js                 persistent codex (across runs, separate from save slot)
+      loadout.js               equip/unequip API, slot resolution, addWearable
+    ui/
+      terminal.js              showTerminalSequence — top-right modal for BBS messages
+      combat.js                combat UI — list view, modals, target nav, log overlay
+      map.js                   left-to-right node graph, right-angle box-drawing edges
+      codex.js                 tabbed codex screen (M/S/W/C/E)
+      nodes.js                 shrine / cache / event / shop / boss-intro handlers
+      inventory.js             slot-first wearable picker with live stat-diff preview
+      glitch.js                visual glitch primitives + connection-driven scheduler
+      util.js                  shared formatters (escapeHtml, stat blocks, etc.)
 ```
 
 ## Locked design decisions
@@ -87,25 +118,55 @@ BBS/
 5. ~~Map generator + node navigation + suspend save/load~~ ✅
 6. ~~Codex screen + identification flow~~ ✅
 7. ~~Special node interactions (shop / cache / shrine / event / boss intro)~~ ✅
-8a. ~~Unified hook system (statuses + wearables + monster passives via `fireHooks`)~~ ✅
-8. **Glitch primitives + ambient connection-driven effects** ← next
-9. Content pass — fill `data/` for the v1 vertical slice
+8a. ~~Glitch primitives + ambient connection-driven visuals~~ ✅
+8b. ~~Unified hook system (statuses + wearables + monster passives via `fireHooks`)~~ ✅
+8c. ~~Core effect vocabulary — 12 statuses (bleed, corrupted, stunned, slowed, hasted, warded, focused, patched, vulnerable, traced, barbed, phase) with damageTaken modifiers and cannotAct flag~~ ✅
+8d. ~~Wearables system — slots, equip/unequip, inventory UI, 7 placeholder items, cache/shop pickups~~ ✅
+9. **Content pass** ← next — expand monsters / spells / events / boss; balance pass
 
-## Architecture summary (post-step 7)
+## Architecture summary (current)
 
 - **Reusable terminal primitive** — `src/ui/terminal.js` exports `showTerminalSequence(lines, options)`. Used by boot dial-up, boss intro, death/victory sequences, and CONN-drain alerts. **All terminal output anchors to the top-right** of the viewport so the player learns "this window = the BBS speaking". Themes: `normal | alarm | failure | glitch`. The selector `.modal.terminal-modal` outranks the base `.modal` for positioning.
-- **Node interaction handlers** — `src/ui/nodes.js` exports `showShrine / showCache / showEvent / showShop / showBossIntro`. Game.js `resolveNode` dispatches by `node.type`. Each handler builds its own ctx via `makeContext` with `onTokenGain` and `onConnChange` callbacks.
-- **Codex** — `src/engine/codex.js` persists in `localStorage.netromancer.codex` (separate from save slot). 5 categories: monsters / spells / wearables / consumables / statuses. Auto-marked: monsters on kill, spells on loadout entry, statuses on `applyStatus`, items on equip/identify (deferred until items have run-side mechanics).
-- **CONN model** — single global stat. `setConn(v)` writes to `state.conn` + `--conn` CSS var. `drainConnection` atom is **silent** (caller narrates). Combat UI counts per-turn drain via `onConnChange` callback and fires a brief alarm-themed `showTerminalSequence` overlay after the turn completes.
-- **Tokens** — `state.run.tokens`. Earned per encounter type: 50% chance of 1 on combat, `1d2` on elite, `4 + 1d4` on boss (silent on miss). Spent in shops.
-- **Player loadout** — `{ spells: [], consumables: [] }`. Wearable slots (weapon/robe/amulet/ring/ring) deferred to step 9 alongside slot UI + stat-modifier piping.
-- **Run state** — `state.run = { seed, map, currentNodeId, previousNodeId, visitedIds, player, tokens }`. Save on every node transition; suspend wipes on load.
-- **WATCHDOG** monster (`mon_watchdog`) is in place as a test fixture for connection degradation. Drains 2% CONN per `logs a trace` action.
+- **Node interaction handlers** — `src/ui/nodes.js` exports `showShrine / showCache / showEvent / showShop / showBossIntro`. `src/run.js`'s `resolveNode` dispatches by `node.type`. Each handler builds its own ctx via `makeContext` with `onTokenGain` and `onConnChange` callbacks. `showNodeModal` is a shared building block — title + flavor + numbered choices, arrow/Enter nav, mouse hover focus, key shortcuts, Esc-to-leave on `isLeave: true` choices.
+- **Codex** — `src/engine/codex.js` persists in `localStorage.netromancer.codex` (separate from save slot). 5 categories: monsters / spells / wearables / consumables / statuses. Auto-marked: monsters on kill, spells on loadout entry, statuses on `applyStatus`, wearables on `addWearable` (cache/shop pickup or starter equip).
+- **CONN model** — single global stat. `setConn(v)` writes to `state.conn` + `--conn` CSS var. `applyConnTier(v)` from `ui/glitch.js` sets a discrete tier class on the body for tiered visual degradation (scanline density, phosphor desat, vignette darkness). `drainConnection` atom is **silent** (caller narrates). Combat UI counts per-turn drain via `onConnChange` callback and fires a brief alarm-themed `showTerminalSequence` overlay after the turn completes, plus a `triggerGlitch('scrambleText', ...)` flourish.
+- **Tokens** — `state.run.tokens`. Earned per encounter type: 50% chance of 1 on combat, `1d2` on elite, `4 + 1d4` on boss (silent on miss). Spent in shops. Display abbreviation is `tkn` (not `t` — collision with "turn").
+- **Player loadout** — `{ spells, consumables, wearables, equipped }`:
+  - `spells` — ids of currently-known cast scripts (per-run; codex marks across runs).
+  - `consumables` — id list of carried single-use items (per-run; consumed on use). Display name suffix `.RUN` ("run-once").
+  - `wearables` — id list (per-run, deduped) of wearables the player has found this run. Equipping does NOT remove from this list.
+  - `equipped` — `{ weapon, robe, amulet, ring1, ring2 }` each `id|null`. Slot values are item ids; resolved to defs via `data.item(id)`.
+- **Wearable resolution** — `setDataRef(data)` in `atoms.js` stashes a module-level data reference so `effectiveStat`, `allModifiers`, `actorHasFlag`, and `fireHooks` can resolve `equipped[slot]` ids to defs without threading `data` through every call site. The internal `equippedDefs(actor)` iterator yields each equipped item's def; everything iterates through it.
+- **Run state** — `state.run = { seed, map, currentNodeId, previousNodeId, visitedIds, player, tokens }`. Save on every node transition; suspend wipes on load. `loadout.equipped` and `loadout.wearables` ride along in player serialization (id-based, no def caching).
+- **Test monsters** — `mon_glyph_wraith` (basic) and `mon_watchdog` (drains 2% CONN per "logs a trace" action — exists as the connection-degradation test fixture).
+- **Test wearables** — 7 placeholders: `RUSTED.DAGGER`, `STAFF.DBG`, `THIN.ROBE`, `STATIC.WEAVE`, `LINK.AMULET` (onCast hook), `BARBED.RING` (onDamaged hook), `BIT.RING`. Worth keeping the 2 hook-bearing items as canonical examples for hook-pattern authoring.
+
+## Next session — content pass
+
+The substrate is complete. Step 9 expands content. Recommended order (feel free to slice differently, but each is self-contained):
+
+1. **Monsters (ICE tier)** — 4-6 new monsters covering the BBS-fights-back arc. Watchdog is the prototype; needs partners with distinct mechanics (CONN drain, status inflictors, AoE, summoners, retaliators, conditional behavior). Layer-aware spawn rules (replace the current 50/50 wraith/watchdog roll in `engine/map.js`).
+2. **Spells** — currently 4 (3 starter + `spl_corrupt`). Aim ~6-10 more: more arcane (chain, freeze, mirror, heal-other), more exploit (DELETE, RESET.EXE, PEEK, BACKDOOR.EXE), one or two hybrids. Drives library/cache value.
+3. **Events** — 3 → 8-12. The structure (title + description + choices with weighted outcomes) supports rich variety.
+4. **Boss content** — currently 2× wraith placeholder. Needs unique SYSOP monster with multi-phase actions, conn-tampering mechanics, HP-threshold phase changes, bespoke ASCII art, taunt lines integrated with `showBossIntro`.
+5. **Decorative per-node ASCII art** (optional polish) — atmospheric backgrounds for shrine/cache nodes.
+6. **Balance pass** — once content is in: token economy, monster stats, spell costs, wearable strength. Run a full playthrough (or several) and tune.
+
+Authoring is JSON-only for 1-3, JSON + minor ASCII art for 4-5, mostly tuning numbers for 6.
+
+**Hook patterns to reach for** (from existing canon — see Architecture conventions):
+- `periodic-pulse` (DoT, regen, conn-drain auras)
+- `retaliate-on-damaged` (thorns, traces, alarm)
+- `on-cast-trigger` (mana refund, status apply per cast)
+- `apply-on-attack composition` (attack effects array bundles damage + applyStatus — default for "this attack also bleeds")
+
+**Existing 12 statuses** to compose with: bleed, corrupted, stunned, slowed, hasted, warded, focused, patched, vulnerable, traced, barbed, phase. Add new statuses opportunistically when authoring needs them; the codex surfaces them naturally.
 
 ## Open TODOs
 
-- Stats panel still shows static `CONN 100%` text — already removed; only conn-readout in title bar drives the visual.
-- Decorative per-node ASCII art (atmospheric backgrounds for shrine/cache/boss intros) — deferred to step 9 polish or content pass.
-- **Glitch primitives** — `triggerGlitch(type, intensity, target)` stub in `game.js` with planned types `scrambleText | tearLine | colorSwap | corruptBorders | flicker`. Mark glitchable text elements with `data-glitchable`. CSS var `--conn` is the input signal. Step 8 wires these to ambient effects and to specific events.
-- Wearables (slots + stat modifiers) — deferred to step 9.
-- Real boss content — currently 2× wraith placeholder.
+- Real SYSOP boss content (currently 2× wraith placeholder).
+- Decorative per-node ASCII art for shrine/cache (atmospheric backgrounds).
+- More monsters (the BBS-resists-harder arc — ICE tier).
+- More spells (especially hacker/exploit beyond CORRUPT.SPL).
+- More events (run feels samey with 3).
+- Balance pass (post-content).
