@@ -3,9 +3,9 @@
     "id": "itm_heal_run",
     "kind": "consumable",
     "tier": 1,
-    "name": "HEAL.RUN",
+    "name": "HEALING DRAUGHT",
     "cost": 1,
-    "blurb": "Knit flesh briefly.",
+    "blurb": "A red glass vial. Tastes of iron and willow.",
     "targeting": "self",
     "effects": [
       { "type": "heal", "target": "self", "amount": "1d6+4" }
@@ -15,9 +15,9 @@
     "id": "itm_restore_run",
     "kind": "consumable",
     "tier": 1,
-    "name": "RESTORE.RUN",
+    "name": "MANA TONIC",
     "cost": 1,
-    "blurb": "Refill the spell buffer.",
+    "blurb": "Cool blue liquid. Hums faintly.",
     "targeting": "self",
     "effects": [
       { "type": "restoreMana", "target": "self", "amount": "6" }
@@ -53,7 +53,7 @@
     "kind": "wearable",
     "slot": "weapon",
     "tier": 1,
-    "name": "RUSTED.DAGGER",
+    "name": "RUSTED DAGGER",
     "cost": 2,
     "blurb": "Pitted bronze. Still cuts.",
     "modifiers": [{ "stat": "atk", "add": 1 }]
@@ -73,9 +73,9 @@
     "kind": "wearable",
     "slot": "robe",
     "tier": 1,
-    "name": "THIN.ROBE",
+    "name": "THIN ROBE",
     "cost": 2,
-    "blurb": "A patchwork garment of cached frames.",
+    "blurb": "Threadbare wool. Better than nothing.",
     "modifiers": [{ "stat": "def", "add": 1 }]
   },
   {
@@ -111,9 +111,9 @@
     "kind": "wearable",
     "slot": "ring",
     "tier": 2,
-    "name": "BARBED.RING",
+    "name": "BARBED RING",
     "cost": 3,
-    "blurb": "Reactive thorn-glyph — striking you costs the striker.",
+    "blurb": "Iron set with thorn-glyphs. Strikes its striker.",
     "hooks": {
       "onDamaged": [
         { "type": "damage", "target": "target", "amount": "2", "ignoresDef": true, "damageType": "physical" }

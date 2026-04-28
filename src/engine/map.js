@@ -62,7 +62,7 @@ export function generateMap(rng) {
       const node = {
         id, type, layer: li, col: ci,
         edges: [],
-        encounter: makeEncounter(type, rng),
+        encounter: makeEncounter(type, rng, li),
         visited: false,
       };
       nodes.set(id, node);
@@ -108,8 +108,32 @@ function pickType(rng, weights) {
   return weightedPick(rng, items, it => it.w).type;
 }
 
-function makeEncounter(type, rng) {
+// Per-layer combat recipes. Layer index matches map layer (0 = entry, last = boss).
+// Each entry is a list of recipes; one is picked at random for the node.
+// Act 1 occupies layers 0..3 (entry forest → goblin warrens → crypts → dragon's lair).
+// Layers 4+ fall back to existing test monsters until Act 2 content lands.
+const COMBAT_RECIPES = {
+  0: [
+    ['mon_cave_rat', 'mon_cave_rat'],
+    ['mon_cave_rat'],
+    ['mon_vile_bat'],
+    ['mon_goblin_scout'],
+  ],
+  1: [
+    ['mon_cave_rat', 'mon_cave_rat'],
+    ['mon_vile_bat', 'mon_cave_rat'],
+    ['mon_goblin_scout', 'mon_vile_bat'],
+    ['mon_goblin_scout'],
+  ],
+};
+
+function makeEncounter(type, rng, layer = 0) {
   if (type === 'combat') {
+    const recipes = COMBAT_RECIPES[layer];
+    if (recipes && recipes.length) {
+      return { enemyIds: recipes[Math.floor(rng() * recipes.length)] };
+    }
+    // Fallback for layers without authored content yet.
     const id = rng() < 0.5 ? 'mon_watchdog' : 'mon_glyph_wraith';
     return { enemyIds: [id] };
   }

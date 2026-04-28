@@ -1,5 +1,17 @@
 [
   {
+    "id": "spl_missile",
+    "name": "ARCANE MISSILE",
+    "school": "arcane",
+    "tier": 0,
+    "cost": {"mp": 2},
+    "targeting": "single",
+    "effects": [
+      {"type": "damage", "target": "target", "amount": "1d6+INT", "damageType": "magical"}
+    ],
+    "codexBlurb": "A thin dart of mana. Cheap, reliable, taught to every apprentice."
+  },
+  {
     "id": "spl_bolt",
     "name": "ARCANE BOLT",
     "school": "arcane",
@@ -10,6 +22,18 @@
       {"type": "damage", "target": "target", "amount": "2d6+INT", "damageType": "magical"}
     ],
     "codexBlurb": "A focused bolt of raw mana."
+  },
+  {
+    "id": "spl_minor_mend",
+    "name": "MINOR MEND",
+    "school": "arcane",
+    "tier": 0,
+    "cost": {"mp": 3},
+    "targeting": "self",
+    "effects": [
+      {"type": "heal", "target": "self", "amount": "1d6+4"}
+    ],
+    "codexBlurb": "A short thread of mending — first stitch in any spellbook."
   },
   {
     "id": "spl_mend",
