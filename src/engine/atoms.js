@@ -276,6 +276,16 @@ registerAtom('damage', (atom, ctx) => {
   const dmg = Math.max(0, Math.floor(afterDef * mult) + add);
   t.stats.hp = Math.max(0, (t.stats.hp ?? 0) - dmg);
   ctx.log(`${t.name} takes ${dmg} damage.`);
+  if (atom.lifesteal && dmg > 0 && ctx.self && ctx.self !== t) {
+    const heal = Math.floor(dmg * atom.lifesteal);
+    if (heal > 0) {
+      const before = ctx.self.stats.hp ?? 0;
+      const max = ctx.self.stats.maxHp ?? before + heal;
+      ctx.self.stats.hp = Math.min(max, before + heal);
+      const healed = (ctx.self.stats.hp ?? 0) - before;
+      if (healed > 0) ctx.log(`${ctx.self.name} drains ${healed} HP.`);
+    }
+  }
   if (dmg > 0) {
     const attacker = ctx.self;
     fireHooks(t, 'onDamaged', ctx, { target: attacker || t });

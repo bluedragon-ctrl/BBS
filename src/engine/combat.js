@@ -25,6 +25,7 @@ export function cloneActor(def, opts = {}) {
     stats: { ...def.stats },
     statuses: [],
     energy: opts.energy ?? 0,
+    actionCount: 0,
     dead: false,
     loadout: opts.loadout || null,
   };
@@ -48,6 +49,7 @@ export function makePlayerActor(opts = {}) {
     stats: opts.stats || { hp: 24, maxHp: 24, mp: 15, maxMp: 15, int: 6, atk: 4, def: 2, spd: 10 },
     statuses: [],
     energy: 0,
+    actionCount: 0,
     dead: false,
     loadout: opts.loadout || {
       spells: ['spl_bolt', 'spl_mend', 'spl_ward'],
@@ -292,9 +294,11 @@ export async function runCombat(combat, hooks = {}) {
           ? await hooks.getPlayerAction(actor, combat)
           : { kind: 'wait' });
         await executePlayerAction(action, actor, combat, hooks);
+        actor.actionCount = (actor.actionCount || 0) + 1;
       } else {
         const action = chooseAiAction(actor, combat);
         executeAiAction(action, actor, combat);
+        actor.actionCount = (actor.actionCount || 0) + 1;
       }
       reapDead(combat);
       checkEndConditions(combat);
