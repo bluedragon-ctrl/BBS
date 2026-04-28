@@ -195,14 +195,15 @@ function formatInspect(e) {
       `STACK:    ${e.stackMode || 'refresh'}`,
       `DURATION: ${e.duration ?? '?'}`,
     ];
-    if (e.modifiers?.length) {
+    if (e.tags?.length) lines.push(`TAGS:     ${e.tags.join(', ')}`);
+    if (e.flags?.length) lines.push(`FLAGS:    ${e.flags.join(', ')}`);
+    const modLines = [];
+    for (const m of e.modifiers || []) {
+      modLines.push(formatModifier(m));
+    }
+    if (modLines.length) {
       lines.push('', 'MODIFIERS:');
-      for (const m of e.modifiers) {
-        const part = [];
-        if (m.add  != null) part.push(`+${m.add}`);
-        if (m.mult != null) part.push(`x${m.mult}`);
-        lines.push(`  ${m.stat}: ${part.join(' ')}`);
-      }
+      for (const ml of modLines) lines.push(`  ${ml}`);
     }
     if (e.hooks) {
       const hookNames = Object.keys(e.hooks).filter(k => e.hooks[k]?.length);
@@ -214,6 +215,7 @@ function formatInspect(e) {
         }
       }
     }
+    if (e.codexBlurb) lines.push('', `"${e.codexBlurb}"`);
     return lines.join('\n');
   }
   if (currentTab === 'wearables' || currentTab === 'consumables') {
@@ -228,6 +230,27 @@ function formatEffect(eff) {
   if (eff.type === 'heal')        return `heal ${eff.amount} → ${eff.target || 'self'}`;
   if (eff.type === 'applyStatus') return `apply ${eff.effect}${eff.duration ? ' for '+eff.duration : ''} → ${eff.target || 'target'}`;
   return `${eff.type}${eff.amount ? ' ' + eff.amount : ''} → ${eff.target || ''}`;
+}
+
+function formatModifier(m) {
+  if (!m) return '?';
+  // Stat-side: { stat, add, mult }
+  if (m.stat) {
+    const part = [];
+    if (m.add  != null) part.push(`${m.add >= 0 ? '+' : ''}${m.add}`);
+    if (m.mult != null) part.push(`x${m.mult}`);
+    return `${String(m.stat).toUpperCase()}: ${part.join(' ') || '(noop)'}`;
+  }
+  // Target-side damage: { damageTakenMult, damageTakenAdd }
+  if (m.damageTakenMult != null || m.damageTakenAdd != null) {
+    const part = [];
+    if (m.damageTakenMult != null) part.push(`x${m.damageTakenMult}`);
+    if (m.damageTakenAdd  != null) part.push(`${m.damageTakenAdd >= 0 ? '+' : ''}${m.damageTakenAdd}`);
+    return `damage taken: ${part.join(' ')}`;
+  }
+  // Flag-style: { flags: [...] }
+  if (Array.isArray(m.flags)) return `flags: ${m.flags.join(', ')}`;
+  return JSON.stringify(m);
 }
 
 

@@ -23,6 +23,43 @@ export function effectiveStat(actor, statName) {
   return val * mult;
 }
 
+// ---------- Modifier walkers (target-side / flag-style) ----------
+
+// Iterates every modifier object attached to actor — across active statuses and
+// equipped wearables — for non-stat fields like damageTakenMult / flags.
+function* allModifiers(actor) {
+  for (const s of actor?.statuses ?? []) {
+    for (const m of s.def?.modifiers ?? []) yield m;
+  }
+  const equipped = actor?.loadout?.equipped;
+  if (equipped) {
+    for (const slot of Object.keys(equipped)) {
+      for (const m of equipped[slot]?.modifiers ?? []) yield m;
+    }
+  }
+}
+
+// Returns { mult, add } aggregated across all sources. mult is a product, add is a sum.
+export function damageTakenMods(actor) {
+  let mult = 1, add = 0;
+  for (const m of allModifiers(actor)) {
+    if (m.damageTakenMult != null) mult *= m.damageTakenMult;
+    if (m.damageTakenAdd  != null) add  += m.damageTakenAdd;
+  }
+  return { mult, add };
+}
+
+// Returns true if any active status / wearable declares `flags: [name]`.
+export function actorHasFlag(actor, name) {
+  for (const m of allModifiers(actor)) {
+    if (Array.isArray(m.flags) && m.flags.includes(name)) return true;
+  }
+  for (const s of actor?.statuses ?? []) {
+    if (Array.isArray(s.def?.flags) && s.def.flags.includes(name)) return true;
+  }
+  return false;
+}
+
 // ---------- Context ----------
 
 const SHORTCUT_STATS = ['HP', 'MP', 'INT', 'ATK', 'DEF', 'SPD', 'CONN'];
@@ -216,7 +253,10 @@ registerAtom('damage', (atom, ctx) => {
   // damageType is a forward-compat tag; current engine reduces all non-pure damage by DEF.
   // Magic-resist via INT is a planned refinement.
   const def = atom.ignoresDef ? 0 : effectiveStat(t, 'def');
-  const dmg = Math.max(0, raw - def);
+  // Order: raw → DEF → mult → add. ignoresDef skips DEF only; target-side mult/add still apply.
+  const afterDef = Math.max(0, raw - def);
+  const { mult, add } = damageTakenMods(t);
+  const dmg = Math.max(0, Math.floor(afterDef * mult) + add);
   t.stats.hp = Math.max(0, (t.stats.hp ?? 0) - dmg);
   ctx.log(`${t.name} takes ${dmg} damage.`);
   if (dmg > 0) {
