@@ -3,6 +3,8 @@
 // Used for the boot dial-up, and reusable for in-game events: boss
 // interference, connection drops, restoration, exposition, etc.
 
+import { sleep } from './util.js';
+
 const DEFAULTS = {
   theme: 'normal',     // 'normal' | 'alarm' | 'failure' | 'glitch'
   charMs: 22,
@@ -113,4 +115,3 @@ async function typeInto(el, text, charMs, isSkipped) {
   }
 }
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
