@@ -149,7 +149,8 @@ function executeAiAction(action, actor, combat) {
   // AI default target: first living actor on opposing team.
   const target = combat.actors.find(a => isAlive(a) && a.team !== actor.team);
   const verb = action.name || 'attacks';
-  if (target && target !== actor) {
+  const intransitive = action.narrate === 'self';
+  if (target && target !== actor && !intransitive) {
     combat.logFn(`${actor.name} ${verb} ${target.name}.`);
   } else {
     combat.logFn(`${actor.name} ${verb}.`);
