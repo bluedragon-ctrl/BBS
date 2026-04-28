@@ -125,6 +125,12 @@ const COMBAT_RECIPES = {
     ['mon_goblin_scout', 'mon_vile_bat'],
     ['mon_goblin_scout'],
   ],
+  2: [
+    ['mon_goblin_warrior', 'mon_goblin_scout'],
+    ['mon_goblin_shaman', 'mon_goblin_scout', 'mon_goblin_scout'],
+    ['mon_kobold_striker', 'mon_goblin_warrior'],
+    ['mon_kobold_striker', 'mon_kobold_striker', 'mon_kobold_striker'],
+  ],
 };
 
 function makeEncounter(type, rng, layer = 0) {

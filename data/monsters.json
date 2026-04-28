@@ -59,6 +59,74 @@
     "loot": []
   },
   {
+    "id": "mon_goblin_warrior",
+    "name": "GOBLIN WARRIOR",
+    "stats": {"hp": 16, "maxHp": 16, "mp": 0, "maxMp": 0, "spd": 10, "def": 2, "int": 0, "atk": 4},
+    "ascii": [
+      "    .-.    ",
+      "   (>.<)   ",
+      "  /| | |\\  ",
+      "  ====+==  ",
+      "   | | |   ",
+      "   ^   ^   "
+    ],
+    "ai": "aggressive",
+    "actions": [
+      {"name": "slashes", "weight": 1, "condition": "self.actionCount % 2 === 0",
+       "effects": [{"type": "damage", "target": "target", "amount": "1d4+ATK", "damageType": "physical"}]},
+      {"name": "power-slashes", "weight": 1, "condition": "self.actionCount % 2 === 1",
+       "effects": [{"type": "damage", "target": "target", "amount": "1d4+ATK+2", "damageType": "physical"}]}
+    ],
+    "loot": []
+  },
+  {
+    "id": "mon_goblin_shaman",
+    "name": "GOBLIN SHAMAN",
+    "stats": {"hp": 12, "maxHp": 12, "mp": 0, "maxMp": 0, "spd": 9, "def": 0, "int": 3, "atk": 1},
+    "ascii": [
+      "   .===.   ",
+      "  ( o.o )  ",
+      "  /\\_v_/\\  ",
+      " ~ | * | ~ ",
+      "   ^   ^   "
+    ],
+    "ai": "support",
+    "actions": [
+      {"name": "weaves green light", "weight": 3, "narrate": "self",
+       "condition": "allAllies.some(a => a.stats.hp < a.stats.maxHp)",
+       "effects": [{"type": "heal", "target": "lowestHpAlly", "amount": "4"}]},
+      {"name": "snarls a curse at", "weight": 1,
+       "effects": [{"type": "applyStatus", "effect": "vulnerable", "target": "target", "duration": 3}]}
+    ],
+    "loot": []
+  },
+  {
+    "id": "mon_kobold_striker",
+    "name": "KOBOLD STRIKER",
+    "stats": {"hp": 14, "maxHp": 14, "mp": 0, "maxMp": 0, "spd": 11, "def": 1, "int": 0, "atk": 3},
+    "ascii": [
+      "    /\\     ",
+      "   /oo\\    ",
+      "  ( ww )   ",
+      "   \\__/-=  ",
+      "    ||     ",
+      "    ^^     "
+    ],
+    "ai": "striker",
+    "actions": [
+      {"name": "coils, ready to strike", "weight": 1, "narrate": "self",
+       "condition": "!self.statuses.some(s => s.def.id === 'preparing')",
+       "effects": [{"type": "applyStatus", "effect": "preparing", "target": "self", "duration": 2}]},
+      {"name": "lunges with a deep stab into", "weight": 999,
+       "condition": "self.statuses.some(s => s.def.id === 'preparing')",
+       "effects": [
+         {"type": "removeStatus", "target": "self", "effect": "preparing"},
+         {"type": "damage", "target": "target", "amount": "2*(1d4+ATK)", "damageType": "physical"}
+       ]}
+    ],
+    "loot": []
+  },
+  {
     "id": "mon_glyph_wraith",
     "name": "GLYPH WRAITH",
     "stats": {"hp": 18, "maxHp": 18, "mp": 0, "maxMp": 0, "spd": 12, "def": 2, "int": 2, "atk": 3},

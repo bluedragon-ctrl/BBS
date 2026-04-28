@@ -150,6 +150,18 @@
     "codexBlurb": "Reactive thorn-glyph — striking you costs the striker."
   },
   {
+    "id": "preparing",
+    "name": "PREPARING",
+    "shortName": "ready",
+    "kind": "buff",
+    "tags": ["telegraph"],
+    "stackMode": "refresh",
+    "duration": 2,
+    "modifiers": [],
+    "hooks": {},
+    "codexBlurb": "Coiled, breath held — the next strike will land hard."
+  },
+  {
     "id": "phase",
     "name": "PHASED",
     "shortName": "phase",

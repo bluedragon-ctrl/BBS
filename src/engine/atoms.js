@@ -128,6 +128,15 @@ export function resolveTarget(keyword, ctx) {
     case 'allEnemies': return [...ctx.allEnemies];
     case 'ally':       return ctx.target && ctx.allAllies.includes(ctx.target) ? [ctx.target] : [];
     case 'allAllies':  return [...ctx.allAllies];
+    case 'lowestHpAlly': {
+      const allies = ctx.allAllies ?? [];
+      if (!allies.length) return [];
+      let pick = allies[0];
+      for (const a of allies) {
+        if ((a.stats?.hp ?? 0) < (pick.stats?.hp ?? 0)) pick = a;
+      }
+      return [pick];
+    }
     case 'all':        return [...ctx.allEnemies, ...ctx.allAllies];
     default:           return [];
   }
