@@ -1,5 +1,64 @@
 [
   {
+    "id": "mon_cave_rat",
+    "name": "CAVE RAT",
+    "stats": {"hp": 8, "maxHp": 8, "mp": 0, "maxMp": 0, "spd": 12, "def": 0, "int": 0, "atk": 2},
+    "ascii": [
+      "    ___    ",
+      "   /o.o\\__ ",
+      "  ( >^<   )",
+      "   \\___/'~ ",
+      "    ` `    "
+    ],
+    "ai": "aggressive",
+    "actions": [
+      {"name": "bites", "weight": 1,
+       "effects": [{"type": "damage", "target": "target", "amount": "1d3+ATK", "damageType": "physical"}]}
+    ],
+    "loot": []
+  },
+  {
+    "id": "mon_vile_bat",
+    "name": "VILE BAT",
+    "stats": {"hp": 6, "maxHp": 6, "mp": 0, "maxMp": 0, "spd": 15, "def": 0, "int": 0, "atk": 2},
+    "ascii": [
+      "  /\\___/\\  ",
+      " /( o_o )\\ ",
+      "<  \\_v_/  >",
+      " \\  \"\"\"  / ",
+      "  '~~~~~'  "
+    ],
+    "ai": "aggressive",
+    "actions": [
+      {"name": "bites", "weight": 1,
+       "effects": [{"type": "damage", "target": "target", "amount": "1d3+ATK", "damageType": "physical"}]}
+    ],
+    "loot": []
+  },
+  {
+    "id": "mon_goblin_scout",
+    "name": "GOBLIN SCOUT",
+    "stats": {"hp": 12, "maxHp": 12, "mp": 0, "maxMp": 0, "spd": 10, "def": 1, "int": 0, "atk": 3},
+    "ascii": [
+      "    .-.    ",
+      "   (>_<)   ",
+      "  /|\\_/|\\  ",
+      "   |/`\\|   ",
+      "   ^   ^   "
+    ],
+    "ai": "aggressive",
+    "actions": [
+      {"name": "stabs", "weight": 3,
+       "effects": [{"type": "damage", "target": "target", "amount": "1d4+ATK", "damageType": "physical"}]},
+      {"name": "slashes a wound across", "weight": 1,
+       "effects": [
+         {"type": "damage", "target": "target", "amount": "1d3+ATK", "damageType": "physical"},
+         {"type": "applyStatus", "effect": "bleed", "target": "target", "duration": 3}
+       ]}
+    ],
+    "loot": []
+  },
+  {
     "id": "mon_glyph_wraith",
     "name": "GLYPH WRAITH",
     "stats": {"hp": 18, "maxHp": 18, "mp": 0, "maxMp": 0, "spd": 12, "def": 2, "int": 2, "atk": 3},
