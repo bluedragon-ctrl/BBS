@@ -5,6 +5,7 @@ import { makeContext, executeAtoms } from '../engine/atoms.js';
 import { weightedPick, pick } from '../engine/rng.js';
 import { evalExpr } from '../engine/expr.js';
 import { markKnown } from '../engine/codex.js';
+import { addWearable } from '../engine/loadout.js';
 import { showTerminalSequence } from './terminal.js';
 import { sleep, escapeHtml, formatTokens, countBy } from './util.js';
 
@@ -160,15 +161,31 @@ export async function showCache() {
   const selectableCount = 1 + Math.floor(rng() * 3); // 1-3
   const flavorCount = 3 + Math.floor(rng() * 4);     // 3-6
 
-  // Build candidate pool: spells the player doesn't have, plus tokens reward.
+  // Build candidate pools: spells/wearables not yet found this run, plus tokens fallback.
   const knownSpells = new Set(player.loadout.spells);
   const candidateSpells = deps.data.list('spells').filter(s => !knownSpells.has(s.id));
+  const ownedWearables = new Set(player.loadout.wearables || []);
+  const candidateWearables = (deps.data.list('items') || [])
+    .filter(it => it.kind === 'wearable' && !ownedWearables.has(it.id));
 
   function rollDrop() {
-    // Weight: spells (if any unknown) by tier; or tokens fallback
+    // Pool selection: 60% spell if any unknown, 30% wearable if any new, else tokens.
+    const r = rng();
+    if (candidateSpells.length && r < 0.55) {
+      const spell = weightedPick(rng, candidateSpells, s => 1 / Math.max(1, s.tier || 1) ** 1.5 * 6);
+      return { kind: 'spell', spell };
+    }
+    if (candidateWearables.length && r < 0.85) {
+      const item = weightedPick(rng, candidateWearables, it => 1 / Math.max(1, it.tier || 1) ** 1.5 * 6);
+      return { kind: 'wearable', item };
+    }
     if (candidateSpells.length) {
       const spell = weightedPick(rng, candidateSpells, s => 1 / Math.max(1, s.tier || 1) ** 1.5 * 6);
       return { kind: 'spell', spell };
+    }
+    if (candidateWearables.length) {
+      const item = weightedPick(rng, candidateWearables, it => 1 / Math.max(1, it.tier || 1) ** 1.5 * 6);
+      return { kind: 'wearable', item };
     }
     return { kind: 'tokens', amount: 1 + Math.floor(rng() * 3) };
   }
@@ -182,7 +199,12 @@ export async function showCache() {
   for (let i = 0; i < selectableCount; i++) {
     const placeholder = `EXEC_${(i + 1).toString(16).toUpperCase()}.???`;
     rows.push({ kind: 'select', label: placeholder, key: String(i + 1) });
-    realNames.push(drops[i].kind === 'spell' ? drops[i].spell.name : `+${drops[i].amount} TOKENS`);
+    const d = drops[i];
+    realNames.push(
+      d.kind === 'spell'    ? d.spell.name
+    : d.kind === 'wearable' ? d.item.name
+    :                         `+${d.amount} TOKENS`
+    );
   }
   // Flavor rows
   const usedNames = new Set();
@@ -251,6 +273,9 @@ export async function showCache() {
       player.loadout.spells.push(drop.spell.id);
       markKnown('spells', drop.spell.id);
       deps.log(`> ${drop.spell.name} added to loadout.`);
+    } else if (drop.kind === 'wearable') {
+      addWearable(player, drop.item.id);
+      deps.log(`> ${drop.item.name} catalogued. Equip from inventory.`);
     } else if (drop.kind === 'tokens') {
       run.tokens = (run.tokens || 0) + drop.amount;
       deps.log(`> +${formatTokens(drop.amount)}.`);
@@ -339,14 +364,20 @@ export async function showEvent() {
 
 export async function showShop() {
   const run = deps.getRun();
-  const allConsumables = (deps.data.list('items') || []).filter(it => it.kind === 'consumable');
-  if (!allConsumables.length) {
+  const owned = new Set(run.player.loadout?.wearables || []);
+  // Pool: all consumables + wearables not already owned this run.
+  const allItems = (deps.data.list('items') || []).filter(it => {
+    if (it.kind === 'consumable') return true;
+    if (it.kind === 'wearable')   return !owned.has(it.id);
+    return false;
+  });
+  if (!allItems.length) {
     deps.log('> Shop is empty.');
     return;
   }
 
   // Random subset of 3, tier-weighted (commons more likely).
-  const shuffled = [...allConsumables].sort(() => deps.rng() - 0.5);
+  const shuffled = [...allItems].sort(() => deps.rng() - 0.5);
   const offered = shuffled.slice(0, Math.min(3, shuffled.length));
 
   function buildChoices() {
@@ -392,10 +423,13 @@ export async function showShop() {
       continue;
     }
     run.tokens -= chosen.cost;
-    run.player.loadout.consumables = run.player.loadout.consumables || [];
-    run.player.loadout.consumables.push(chosen.id);
-    if (chosen.kind === 'consumable') markKnown('consumables', chosen.id);
-    else if (chosen.kind === 'wearable') markKnown('wearables', chosen.id);
+    if (chosen.kind === 'consumable') {
+      run.player.loadout.consumables = run.player.loadout.consumables || [];
+      run.player.loadout.consumables.push(chosen.id);
+      markKnown('consumables', chosen.id);
+    } else if (chosen.kind === 'wearable') {
+      addWearable(run.player, chosen.id);
+    }
     lastFeedback = { text: `Purchased ${chosen.name}. (-${chosen.cost} tkn)`, kind: 'ok' };
     deps.log(`> Purchased ${chosen.name}. (-${chosen.cost} tkn)`);
     deps.persistRun();

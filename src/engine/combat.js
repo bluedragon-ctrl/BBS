@@ -49,7 +49,12 @@ export function makePlayerActor(opts = {}) {
     statuses: [],
     energy: 0,
     dead: false,
-    loadout: opts.loadout || { spells: ['spl_bolt', 'spl_mend', 'spl_ward'], consumables: [] },
+    loadout: opts.loadout || {
+      spells: ['spl_bolt', 'spl_mend', 'spl_ward'],
+      consumables: [],
+      wearables: [],
+      equipped: { weapon: null, robe: null, amulet: null, ring1: null, ring2: null },
+    },
   };
   // Codex: any spell in the starter loadout is "known" — it's already a script in your kit.
   for (const id of player.loadout.spells || []) markKnown('spells', id);

@@ -1,7 +1,7 @@
 // Map UI — renders current node + immediate next-layer choices, handles input.
 
 import { NODE_GLYPH, NODE_LABEL, NODE_FLAVOR } from '../engine/map.js';
-import { formatStatsBlock } from './util.js';
+import { formatStatsBlock, formatEquippedSlots } from './util.js';
 
 let deps = null;
 let run = null;             // shared run state object from game.js
@@ -194,8 +194,9 @@ function renderEndArt(node) {
 function renderStats() {
   const body = document.querySelector('section[data-screen="map"] .stats-body');
   if (!body || !run.player) return;
+  const slots = formatEquippedSlots(run.player, deps.data);
   body.textContent = formatStatsBlock(run.player, {
-    extra: ['', `TOKENS  ${run.tokens || 0}`],
+    extra: ['', ...slots, '', `TOKENS  ${run.tokens || 0}`],
   });
 }
 
@@ -262,7 +263,8 @@ function handleAction(action) {
       deps.log('Hover or arrow-key over choices to inspect.');
       break;
     case 'inventory':
-      deps.log('Inventory not yet implemented.');
+      if (deps.openInventory) deps.openInventory();
+      else deps.log('Inventory not available.');
       break;
     case 'codex':
       if (deps.openCodex) deps.openCodex();

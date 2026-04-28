@@ -40,6 +40,25 @@ export function formatStatsBlock(actor, { extra = [] } = {}) {
   return [...lines, ...extra].join('\n');
 }
 
+// Five-line equipped readout, suitable as `extra` for formatStatsBlock.
+// Reads loadout.equipped (id values) and resolves names via data.item.
+const SLOT_DISPLAY = [
+  ['weapon', 'WEAPON'],
+  ['robe',   'ROBE  '],
+  ['amulet', 'AMULET'],
+  ['ring1',  'RING  '],
+  ['ring2',  'RING  '],
+];
+export function formatEquippedSlots(actor, data) {
+  if (!actor?.loadout?.equipped) return [];
+  const equipped = actor.loadout.equipped;
+  return SLOT_DISPLAY.map(([slot, label]) => {
+    const id = equipped[slot];
+    const def = id ? data?.item?.(id) : null;
+    return `${label}  ${def ? def.name : '-'}`;
+  });
+}
+
 // One-line stat readout (INT/ATK/DEF/SPD) for compact inspect panels.
 export function formatStatLine(actor) {
   return `INT ${effectiveStat(actor, 'int')}  ATK ${effectiveStat(actor, 'atk')}  ` +

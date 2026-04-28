@@ -477,11 +477,32 @@ function wireKeys() {
       return;
     }
 
+    // Idle / inspect-mode: arrow keys cycle through living combatants and
+    // refresh the INSPECT panel. Doesn't consume the action — purely viewing.
+    if (uiState === 'idle' || uiState === 'inspectMode') {
+      if (e.key === 'ArrowDown' || e.key === 'j') { e.preventDefault(); moveInspectFocus(1); return; }
+      if (e.key === 'ArrowUp'   || e.key === 'k') { e.preventDefault(); moveInspectFocus(-1); return; }
+    }
+
     if (resolvePlayerAction) {
       const map = { a: 'attack', c: 'cast', i: 'item', w: 'wait', x: 'inspect', f: 'flee' };
       const action = map[e.key.toLowerCase()];
       if (action) handleAction(action);
     }
+  });
+}
+
+function moveInspectFocus(delta) {
+  if (!currentCombat) return;
+  const actors = currentCombat.actors.filter(a => isAlive(a));
+  if (!actors.length) return;
+  const curIdx = actors.findIndex(a => a.id === inspectActorId);
+  const nextIdx = (curIdx < 0 ? 0 : (curIdx + delta + actors.length) % actors.length);
+  inspectActorId = actors[nextIdx].id;
+  renderInspect();
+  // Update .selected highlight on rows without rebuilding the whole list
+  document.querySelectorAll('.combat-row').forEach(el => {
+    el.classList.toggle('selected', el.dataset.actorId === inspectActorId);
   });
 }
 

@@ -46,5 +46,88 @@
     "effects": [
       { "type": "cleanse", "target": "self", "kind": "debuff" }
     ]
+  },
+
+  {
+    "id": "itm_rusted_dagger",
+    "kind": "wearable",
+    "slot": "weapon",
+    "tier": 1,
+    "name": "RUSTED.DAGGER",
+    "cost": 2,
+    "blurb": "Pitted bronze. Still cuts.",
+    "modifiers": [{ "stat": "atk", "add": 1 }]
+  },
+  {
+    "id": "itm_debug_staff",
+    "kind": "wearable",
+    "slot": "weapon",
+    "tier": 2,
+    "name": "STAFF.DBG",
+    "cost": 3,
+    "blurb": "Pre-release. Bound to its author's intent.",
+    "modifiers": [{ "stat": "int", "add": 2 }]
+  },
+  {
+    "id": "itm_thin_robe",
+    "kind": "wearable",
+    "slot": "robe",
+    "tier": 1,
+    "name": "THIN.ROBE",
+    "cost": 2,
+    "blurb": "A patchwork garment of cached frames.",
+    "modifiers": [{ "stat": "def", "add": 1 }]
+  },
+  {
+    "id": "itm_static_weave",
+    "kind": "wearable",
+    "slot": "robe",
+    "tier": 2,
+    "name": "STATIC.WEAVE",
+    "cost": 3,
+    "blurb": "Charged threadwork — light and crackling.",
+    "modifiers": [
+      { "stat": "def", "add": 1 },
+      { "stat": "spd", "add": 1 }
+    ]
+  },
+  {
+    "id": "itm_link_amulet",
+    "kind": "wearable",
+    "slot": "amulet",
+    "tier": 2,
+    "name": "LINK.AMULET",
+    "cost": 3,
+    "blurb": "Doubles the throughput of your incantation buffer.",
+    "modifiers": [{ "stat": "maxMp", "add": 3 }],
+    "hooks": {
+      "onCast": [
+        { "type": "restoreMana", "target": "self", "amount": "1" }
+      ]
+    }
+  },
+  {
+    "id": "itm_barbed_ring",
+    "kind": "wearable",
+    "slot": "ring",
+    "tier": 2,
+    "name": "BARBED.RING",
+    "cost": 3,
+    "blurb": "Reactive thorn-glyph — striking you costs the striker.",
+    "hooks": {
+      "onDamaged": [
+        { "type": "damage", "target": "target", "amount": "2", "ignoresDef": true, "damageType": "physical" }
+      ]
+    }
+  },
+  {
+    "id": "itm_bit_ring",
+    "kind": "wearable",
+    "slot": "ring",
+    "tier": 1,
+    "name": "BIT.RING",
+    "cost": 2,
+    "blurb": "Cheap bronze sigil — sharpens your strike.",
+    "modifiers": [{ "stat": "atk", "add": 1 }]
   }
 ]
