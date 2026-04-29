@@ -36,6 +36,12 @@ export function logMessage(entry) {
   if (!typing) drainLogQueue();
 }
 
+// Italic-dim "scene description" line — used for room flavor on entry/exit.
+export function logFlavor(text) {
+  if (!text) return;
+  logMessage([{ text, class: 'log-flavor' }]);
+}
+
 export function flushLog() {
   if (typing) flushFlag = true;
 }
@@ -61,8 +67,11 @@ function toSegments(entry) {
 }
 
 function activeLogBody() {
-  return document.querySelector('section[data-screen].active .log-body')
-      || document.querySelector('.log-body');
+  // Global single source of truth — there's exactly one .log-body in the
+  // document; screen.js portals the parent .log-strip into the active screen's
+  // .log-slot on every showScreen, or parks it in #log-host on screens
+  // without a slot (e.g. boot).
+  return document.querySelector('.log-body');
 }
 
 function isLogAtBottom(el, slack = 2) {
@@ -72,6 +81,13 @@ function isLogAtBottom(el, slack = 2) {
 
 function scrollLogToBottom(el) {
   if (el) el.scrollTop = el.scrollHeight;
+}
+
+// Public hook — force the log strip to its bottom regardless of the user's
+// current scroll position. Used on screen transitions so the player never
+// arrives at a new screen looking at stale lines.
+export function scrollLogToEnd() {
+  scrollLogToBottom(activeLogBody());
 }
 
 async function drainLogQueue() {
@@ -106,7 +122,11 @@ async function drainLogQueue() {
           ch = pool[Math.floor(Math.random() * pool.length)];
         }
         span.textContent += ch;
-        if (isLogAtBottom(log, 4)) scrollLogToBottom(log);
+        // Follow the cursor for the whole line if we started at the bottom.
+        // Re-checking isLogAtBottom per char fails as soon as the line wraps
+        // — scrollHeight outpaces scrollTop by more than the slack and we'd
+        // stop tracking for the rest of the line.
+        if (wasAtBottom) scrollLogToBottom(log);
         await sleep(LOG_CHAR_MS);
       }
     }
