@@ -2,7 +2,7 @@
 
 import {
   makeContext, executeAtoms,
-  fireHooks, tickStatusDurations,
+  fireHooks, fireBarks, tickStatusDurations,
   actorHasFlag,
 } from './atoms.js';
 import { evalExpr } from './expr.js';
@@ -82,6 +82,7 @@ export function startCombat({ player, enemies = [], allies = [], data, rng, log,
   for (const actor of combat.actors) {
     const ctx = buildCtxFor(actor, combat, { target: player });
     fireHooks(actor, 'onSpawn', ctx, { target: player });
+    fireBarks(actor, 'onSpawn', ctx, { target: player });
   }
   return combat;
 }
@@ -193,6 +194,7 @@ async function executePlayerAction(action, actor, combat, hooks) {
     combat.logFn(`${actor.name} casts ${spell.name}.`);
     const castCtx = buildCtxFor(actor, combat, { target });
     fireHooks(actor, 'onCast', castCtx, { target });
+    fireBarks(actor, 'onCast', castCtx, { target });
     runEffectsAsActor(actor, spell.effects, combat, { target });
     return;
   }
@@ -232,6 +234,7 @@ function reapDead(combat) {
       // Fire onDeath before flagging dead, so the hook walker doesn't skip the actor.
       const ctx = buildCtxFor(actor, combat);
       fireHooks(actor, 'onDeath', ctx);
+      fireBarks(actor, 'onDeath', ctx);
       actor.dead = true;
     }
   }

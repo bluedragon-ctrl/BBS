@@ -2,6 +2,7 @@
 
 import { evalExpr } from './expr.js';
 import { markKnown } from './codex.js';
+import { formatSceneString } from './scene.js';
 
 // Module-level data reference. Set once at boot via setDataRef(data) so that
 // hook walkers and stat resolvers can look up equipped item defs by id without
@@ -250,6 +251,55 @@ export function fireHooks(actor, hookName, ctxBase, opts = {}) {
 // Back-compat alias — existing callers still work; prefer fireHooks for new code.
 export const fireStatusHooks = fireHooks;
 
+// ---------- Barks ----------
+// Monster speech lines fired alongside fireHooks at event-shaped moments
+// (onSpawn, onDamaged, onKill, onDeath, onCast). Phase-transition lines go
+// through the `bark` atom co-located with the threshold trigger.
+//
+// Schema on monster def:
+//   barks: {
+//     onSpawn:   ["..."],                       // shorthand: chance 1.0
+//     onDamaged: { chance: 0.25, lines: [...] } // explicit
+//   }
+// Strings interpolate via formatSceneString with { self, target, enemies, ... }.
+
+function buildBarkSceneCtx(self, target, ctxBase) {
+  const enemies = (ctxBase?.allEnemies || []).map(a => ({ name: a.name }));
+  return {
+    self: self ? { name: self.name } : null,
+    target: target ? { name: target.name } : null,
+    enemies,
+    enemyCount: enemies.length,
+    enemyNames: enemies.map(e => e.name).join(', '),
+  };
+}
+
+function emitBark(actor, target, text, ctxBase) {
+  if (!actor || !text || !ctxBase?.log) return;
+  const body = formatSceneString(text, buildBarkSceneCtx(actor, target, ctxBase));
+  const nameClass = actor.team === 'enemy' ? 'log-enemy' : '';
+  ctxBase.log([
+    { text: `${actor.name}: `, class: nameClass },
+    { text: `"${body}"`, class: 'log-flavor' },
+  ]);
+}
+
+// Walk monster-passive barks for `slot` and fire one variant if RNG passes.
+// Statuses/wearables aren't surveyed for barks in v1 — only the monster def.
+export function fireBarks(actor, slot, ctxBase, opts = {}) {
+  if (!actor || actor.dead) return;
+  if (!actor.defId || !ctxBase?.data?.monster) return;
+  const def = ctxBase.data.monster(actor.defId);
+  const entry = def?.barks?.[slot];
+  if (!entry) return;
+  const norm = Array.isArray(entry) ? { chance: 1, lines: entry } : entry;
+  if (!norm.lines?.length) return;
+  const rng = ctxBase.rng || Math.random;
+  if (norm.chance != null && rng() >= norm.chance) return;
+  const line = norm.lines[Math.floor(rng() * norm.lines.length)];
+  emitBark(actor, opts.target ?? null, line, ctxBase);
+}
+
 // Decrements duration on each status; returns ids that expired (after firing onRemove).
 export function tickStatusDurations(actor, ctx) {
   if (!actor?.statuses?.length) return [];
@@ -298,9 +348,11 @@ registerAtom('damage', (atom, ctx) => {
   if (dmg > 0) {
     const attacker = ctx.self;
     fireHooks(t, 'onDamaged', ctx, { target: attacker || t });
+    fireBarks(t, 'onDamaged', ctx, { target: attacker || t });
     if (attacker && attacker !== t) fireHooks(attacker, 'onDealDamage', ctx, { target: t });
     if ((t.stats.hp ?? 0) <= 0 && attacker && attacker !== t) {
       fireHooks(attacker, 'onKill', ctx, { target: t });
+      fireBarks(attacker, 'onKill', ctx, { target: t });
     }
   }
   return { kind: 'damage', target: t.id, amount: dmg, damageType: atom.damageType || 'physical' };
@@ -391,6 +443,20 @@ registerAtom('cleanse', (atom, ctx) => {
   const removed = before - t.statuses.length;
   if (removed > 0) ctx.log(`${t.name} is cleansed (${removed} effect${removed === 1 ? '' : 's'} removed).`);
   return { kind: 'cleanse', target: t.id, removed };
+});
+
+// `bark`: emit a one-off speech line. Doubles as the onPhase trigger — author
+// places it in the same `effects` array as the threshold applyStatus, so the
+// line fires the moment the phase flips. Shape: { type: "bark", lines: [...]
+// , chance? } or { type: "bark", text: "..." }. ctx.self is the speaker.
+registerAtom('bark', (atom, ctx) => {
+  const lines = atom.lines || (atom.text ? [atom.text] : null);
+  if (!lines?.length) return null;
+  const rng = ctx.rng || Math.random;
+  if (atom.chance != null && rng() >= atom.chance) return null;
+  const line = lines[Math.floor(rng() * lines.length)];
+  emitBark(ctx.self, ctx.target, line, ctx);
+  return { kind: 'bark' };
 });
 
 // ---------- Stub atoms ----------
