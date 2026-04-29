@@ -395,6 +395,13 @@ button:disabled {
   min-width: 0;
 }
 
+/* Inventory: keep the PLAYER/INSPECT panels visible above the modal backdrop
+   so the stat-diff preview stays readable while picking an item. */
+[data-screen="inventory"] .right-col {
+  position: relative;
+  z-index: 201;
+}
+
 /* Combat: shrink stats panel by 1lh, give inspect more room. */
 [data-screen="combat"] .right-col {
   grid-template-rows: 13lh 1fr;
@@ -871,13 +878,11 @@ button:disabled {
   gap: 1ch;
   align-items: baseline;
 }
-.spell-list li:hover:not(.disabled),
 .spell-list li.focused:not(.disabled) {
   background: var(--accent);
   color: var(--bg-deep);
   text-shadow: none;
 }
-.spell-list li:hover:not(.disabled) span,
 .spell-list li.focused:not(.disabled) span {
   color: var(--bg-deep);
   text-shadow: none;
@@ -891,7 +896,7 @@ button:disabled {
   text-shadow: none;
 }
 .spell-list .spell-key    { color: var(--accent); }
-.spell-list li:hover:not(.disabled) .spell-key { color: var(--bg-deep); }
+.spell-list li.focused:not(.disabled) .spell-key { color: var(--bg-deep); }
 .spell-list .spell-name   { letter-spacing: 0.05em; }
 .spell-list .spell-school { color: var(--fg-dim); font-size: 0.9em; }
 .spell-list li.school-arcane .spell-name  { color: var(--fg); }
