@@ -9,6 +9,7 @@
   --enemy:     #ff4d6d;   /* hostile actors */
   --warn:      #ffea00;   /* warning thresholds */
   --danger:    #ff003c;   /* crisis (low HP/CONN, debuff chips) */
+  --flavor:    #c8965a;   /* muted parchment amber — scene/room narration */
   --dim:       #2a4858;
   --chrome:    #1a3a4a;
 
@@ -120,11 +121,23 @@ pre {
   width: clamp(100ch, 95vw, 160ch);
   height: clamp(40lh, 95vh, 50lh);
   position: relative;
+  display: flex;
+  flex-direction: column;
   text-shadow:
     0 0 1px var(--fg),
     0 0 4px rgba(0, 255, 159, 0.35),
     0 0 9px rgba(0, 255, 159, 0.14);
 }
+
+.screen-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Hidden host parks the log-strip when no screen owns a .log-slot
+   (e.g. the boot screen). The strip itself is never destroyed. */
+#log-host { display: none; }
 
 /* Color-tuned glows: text colored with accent / warn / danger gets its own
    halo instead of inheriting the green phosphor shadow (otherwise magenta
@@ -169,14 +182,14 @@ pre {
     0 0 7px rgba(255, 77, 109, 0.14);
 }
 
-#screen > section {
+.screen-stage > section {
   position: absolute;
   inset: 0;
   display: none;
   flex-direction: column;
   padding: 1lh 2ch;
 }
-#screen > section.active { display: flex; }
+.screen-stage > section.active { display: flex; }
 
 /* ===== BOOT SCREEN ===== */
 
@@ -352,12 +365,17 @@ button:disabled {
 .layout {
   display: grid;
   grid-template-columns: 1fr 38ch;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    "main inspect"
+    "log  inspect";
   gap: 1ch;
   flex: 1;
   min-height: 0;
 }
 
 .main-pane {
+  grid-area: main;
   border: 1px solid var(--chrome);
   padding: 0.3lh 1ch;
   overflow: hidden;
@@ -365,10 +383,16 @@ button:disabled {
 .main-pane pre { margin: 0; }
 
 .right-col {
+  grid-area: inspect;
   display: grid;
   grid-template-rows: 14lh 1fr;
   gap: 1ch;
   min-height: 0;
+}
+
+.log-slot {
+  grid-area: log;
+  min-width: 0;
 }
 
 /* Combat: shrink stats panel by 1lh, give inspect more room. */
@@ -394,12 +418,11 @@ button:disabled {
 .log-strip {
   border: 1px solid var(--chrome);
   padding: 0.2lh 1ch;
-  height: 5.4lh;
+  height: 7.4lh;
   overflow: hidden;
-  margin-top: 0.5lh;
 }
 .log-body {
-  height: 5lh;
+  height: 7lh;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--chrome) transparent;
@@ -414,6 +437,15 @@ button:disabled {
     0 0 3px rgba(255, 77, 109, 0.35),
     0 0 7px rgba(255, 77, 109, 0.14); }
 .log-body .log-player { color: var(--fg); }
+.log-body .log-flavor,
+.flavor-text {
+  color: var(--flavor);
+  text-shadow:
+    0 0 1px var(--flavor),
+    0 0 3px rgba(200, 150, 90, 0.30),
+    0 0 7px rgba(200, 150, 90, 0.12);
+}
+.log-body .log-flavor { font-style: italic; }
 
 .button-bar {
   display: flex;

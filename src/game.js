@@ -21,7 +21,7 @@ import {
   tierFromConn,
 } from './ui/glitch.js';
 import { showScreen, activeScreen } from './screen.js';
-import { initLog, logMessage, flushLog, awaitLogIdle, isTyping } from './log.js';
+import { initLog, logMessage, logFlavor, flushLog, awaitLogIdle, isTyping } from './log.js';
 import {
   initRun, startNewRun, continueRun, saveAndQuit, resolveNode,
   persistRun, refreshContinueButton,
@@ -232,6 +232,7 @@ initCombatUi({
   data: state.data,
   rng: state.rng,
   log: logMessage,
+  logFlavor,
   awaitLogIdle,
   showScreen: name => { showScreen(name); },
   activeScreen,
@@ -270,6 +271,7 @@ initNodeUi({
   data: state.data,
   rng: state.rng,
   log: logMessage,
+  logFlavor,
   getRun: () => state.run,
   getConn: () => state.conn,
   setConn,
