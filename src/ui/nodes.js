@@ -345,13 +345,20 @@ function redraw(bodyEl, intro, rows) {
 // ====================================================================
 
 export async function showEvent(node) {
-  const level = deps.getRun().level ?? 1;
-  const events = (deps.data.list('events') || []).filter(e => (e.level ?? 1) === level);
-  if (!events.length) {
+  const run = deps.getRun();
+  const level = run.level ?? 1;
+  const seen = run.seenEvents = run.seenEvents || [];
+  const allLevelEvents = (deps.data.list('events') || []).filter(e => (e.level ?? 1) === level);
+  if (!allLevelEvents.length) {
     deps.log('> No events authored.');
     return;
   }
-  const evt = pick(deps.rng, events);
+  // `once: true` events are filtered out once seen; if that empties the pool,
+  // fall back to the full level set so the picker is never stranded.
+  const unseen = allLevelEvents.filter(e => !(e.once && seen.includes(e.id)));
+  const pool = unseen.length ? unseen : allLevelEvents;
+  const evt = pick(deps.rng, pool);
+  if (evt.once && !seen.includes(evt.id)) seen.push(evt.id);
 
   await showNodeModal({
     title: evt.title,

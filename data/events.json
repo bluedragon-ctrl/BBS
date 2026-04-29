@@ -1,5 +1,213 @@
 [
   {
+    "id": "evt_torn_chronicle",
+    "level": 1,
+    "once": true,
+    "title": "A TORN CHRONICLE",
+    "description": "A burnt page on a moss-eaten lectern. You can make out three lines:\n\n  \"...the goblin tide came at dusk. The\n  gates held until dawn. King Ennor stood\n  alone in the vault — and they took the\n  crown from his hand.\"\n\nThe rest is ash.",
+    "choices": [
+      {
+        "label": "POCKET THE PAGE",
+        "outcomes": [
+          {
+            "weight": 1,
+            "text": "You fold the page into your robe. A scholar somewhere will pay.",
+            "effects": [
+              { "type": "addToken", "amount": "1d2" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "LEAVE",
+        "outcomes": [
+          { "weight": 1, "text": "You walk on. The wind takes the ash.", "effects": [] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "evt_hermit_tale",
+    "level": 1,
+    "once": true,
+    "title": "HERMIT'S TALE",
+    "description": "An old man tends a small fire at the trail's edge. He watches you pass, then speaks without looking up:\n\n  \"Quiet folk, the goblins, before.\n  Tribute every harvest, no trouble.\n  Then one summer — they marched.\n  Took the crown straight off the throne.\n  Went into the bones of the kingdom.\n  My grandfather saw it. Never spoke\n  of it twice.\"",
+    "choices": [
+      {
+        "label": "WARM YOUR HANDS",
+        "outcomes": [
+          {
+            "weight": 1,
+            "text": "You sit a while. The fire takes the ache out of your bones.",
+            "effects": [
+              { "type": "heal", "target": "self", "amount": "1d6+3" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "LEAVE",
+        "outcomes": [
+          { "weight": 1, "text": "You nod and walk on. The hermit does not look up.", "effects": [] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "evt_childs_song",
+    "level": 1,
+    "once": true,
+    "title": "A CHILD'S SONG",
+    "description": "Carved into a wayside stone, half-eaten by lichen. A spirit at the edge of sight hums the rhyme as you read:\n\n  sing-a-song of the crimson worm\n  under the hill where the king's\n    bones turn\n  gold is gold and the gold is bright\n  the crown lies under, out of sight\n\nThe spirit fades.",
+    "choices": [
+      {
+        "label": "LISTEN",
+        "outcomes": [
+          {
+            "weight": 1,
+            "text": "The rhyme settles in you. Something steadies.",
+            "effects": [
+              { "type": "restoreMana", "target": "self", "amount": "4" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "LEAVE",
+        "outcomes": [
+          { "weight": 1, "text": "You walk past. The humming follows for a few steps, then doesn't.", "effects": [] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "evt_cursed_altar",
+    "level": 1,
+    "title": "WAYSIDE ALTAR",
+    "description": "A roadside altar of old Eldarmark, half-toppled. The stag-and-tower sigil still shows under the moss. Offerings have lain here a long time.",
+    "choices": [
+      {
+        "label": "PRAY",
+        "outcomes": [
+          {
+            "weight": 1,
+            "text": "Light, faint and warm. The dead kings answer kindly.",
+            "effects": [
+              { "type": "heal", "target": "self", "amount": "1d6+5" },
+              { "type": "applyStatus", "effect": "warded", "target": "self", "duration": 4 }
+            ]
+          },
+          {
+            "weight": 1,
+            "text": "The stone is cold. Something old turns toward you and takes notice.",
+            "effects": [
+              { "type": "damage", "target": "self", "amount": "1d4", "ignoresDef": true, "damageType": "magical" },
+              { "type": "applyStatus", "effect": "vulnerable", "target": "self", "duration": 3 }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "DESECRATE",
+        "outcomes": [
+          {
+            "weight": 1,
+            "text": "You pry up the offerings. Something cuts you on the way out.",
+            "effects": [
+              { "type": "damage", "target": "self", "amount": "1d4", "ignoresDef": true, "damageType": "physical" },
+              { "type": "addToken", "amount": "1d3" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "LEAVE",
+        "outcomes": [
+          { "weight": 1, "text": "You step around it.", "effects": [] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "evt_trapped_chest",
+    "level": 1,
+    "title": "A CHEST IN THE PATH",
+    "description": "An iron-bound chest, alone on the path. No tracks lead to it.\n\nIt seems too easy.",
+    "choices": [
+      {
+        "label": "OPEN IT",
+        "outcomes": [
+          {
+            "weight": 1,
+            "text": "Coins. A small jeweled charm. Whoever left this is long gone.",
+            "effects": [
+              { "type": "addToken", "amount": "1d3+1" }
+            ]
+          },
+          {
+            "weight": 1,
+            "text": "The lid snaps. A spring-blade catches your forearm before you can pull back.",
+            "effects": [
+              { "type": "damage", "target": "self", "amount": "1d4+2", "ignoresDef": true, "damageType": "physical" },
+              { "type": "applyStatus", "effect": "bleed", "target": "self", "duration": 3 }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "LEAVE",
+        "outcomes": [
+          { "weight": 1, "text": "You walk wide of it. The forest swallows the chest behind you.", "effects": [] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "evt_hungry_ghost",
+    "level": 1,
+    "title": "A HUNGRY GHOST",
+    "description": "A faint figure in tattered clothes blocks the path. The face flickers between many — a farmer, a soldier, a child. One of the kingdom's dead, still walking.\n\nIt raises a thin hand toward you.",
+    "choices": [
+      {
+        "label": "COMMUNE",
+        "outcomes": [
+          {
+            "weight": 1,
+            "text": "The spirit's hand passes through your chest. It leaves warmth where the cold was.",
+            "effects": [
+              { "type": "heal", "target": "self", "amount": "1d4+3" },
+              { "type": "restoreMana", "target": "self", "amount": "4" }
+            ]
+          },
+          {
+            "weight": 1,
+            "text": "Cold floods you. The ghost was hungry, not kind.",
+            "effects": [
+              { "type": "drainConnection", "amount": "5" },
+              { "type": "applyStatus", "effect": "vulnerable", "target": "self", "duration": 3 }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "BANISH",
+        "outcomes": [
+          {
+            "weight": 1,
+            "text": "You speak the old words. The figure thins, then is not there.",
+            "effects": []
+          }
+        ]
+      },
+      {
+        "label": "LEAVE",
+        "outcomes": [
+          { "weight": 1, "text": "You step around it. It does not follow.", "effects": [] }
+        ]
+      }
+    ]
+  },
+  {
     "id": "evt_corrupted_terminal",
     "level": 2,
     "title": "CORRUPTED TERMINAL",

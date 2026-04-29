@@ -42,6 +42,7 @@ export function startNewRun() {
     visitedIds: [],
     player: makePlayerActor(),
     tokens: 0,
+    seenEvents: [],
   };
   state.run.currentNodeId = state.run.map.startId;
   state.run.visitedIds.push(state.run.map.startId);
@@ -70,6 +71,7 @@ export function continueRun() {
     visitedIds: data.visitedIds || [],
     player: data.player,
     tokens: data.tokens || 0,
+    seenEvents: data.seenEvents || [],
   };
   setConn(state.conn);
   setMapRun(state.run);
@@ -89,6 +91,7 @@ export function persistRun() {
     player: state.run.player,
     tokens: state.run.tokens,
     conn: state.conn,
+    seenEvents: state.run.seenEvents || [],
   });
 }
 
