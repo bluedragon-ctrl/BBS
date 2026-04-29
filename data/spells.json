@@ -65,6 +65,74 @@
     "codexBlurb": "A glyph hardens around you."
   },
   {
+    "id": "spl_flame_lance",
+    "name": "FLAME LANCE",
+    "school": "arcane",
+    "level": 1,
+    "tier": 1,
+    "cost": {"mp": 4},
+    "targeting": "single",
+    "effects": [
+      {"type": "damage", "target": "target", "amount": "1d8+INT", "damageType": "magical"},
+      {"type": "applyStatus", "effect": "burn", "target": "target", "duration": 3}
+    ],
+    "codexBlurb": "A spike of fire — sets the wound smouldering."
+  },
+  {
+    "id": "spl_frost_bind",
+    "name": "FROST BIND",
+    "school": "arcane",
+    "level": 1,
+    "tier": 1,
+    "cost": {"mp": 3},
+    "targeting": "single",
+    "effects": [
+      {"type": "damage", "target": "target", "amount": "1d4+INT", "damageType": "magical"},
+      {"type": "applyStatus", "effect": "slowed", "target": "target", "duration": 3}
+    ],
+    "codexBlurb": "Glassy cold across the limbs — the world keeps moving without them."
+  },
+  {
+    "id": "spl_haste",
+    "name": "HASTE",
+    "school": "arcane",
+    "level": 1,
+    "tier": 2,
+    "cost": {"mp": 5},
+    "targeting": "self",
+    "effects": [
+      {"type": "applyStatus", "effect": "hasted", "target": "self", "duration": 3}
+    ],
+    "codexBlurb": "Time runs thin around you — three breaths in the space of one."
+  },
+  {
+    "id": "spl_tempest",
+    "name": "TEMPEST",
+    "school": "arcane",
+    "level": 1,
+    "tier": 2,
+    "cost": {"mp": 6},
+    "targeting": "all",
+    "effects": [
+      {"type": "damage", "target": "allEnemies", "amount": "1d4+INT", "damageType": "magical"}
+    ],
+    "codexBlurb": "Lightning in the rafters — every hostile in the room takes the strike."
+  },
+  {
+    "id": "spl_shatter",
+    "name": "SHATTER",
+    "school": "arcane",
+    "level": 1,
+    "tier": 2,
+    "cost": {"mp": 5},
+    "targeting": "single",
+    "effects": [
+      {"type": "damage", "target": "target", "amount": "1d6+INT", "damageType": "magical"},
+      {"type": "applyStatus", "effect": "vulnerable", "target": "target", "duration": 3}
+    ],
+    "codexBlurb": "Hairline cracks in the target's defences. Everything that follows lands harder."
+  },
+  {
     "id": "spl_corrupt",
     "name": "CORRUPT.SPL",
     "school": "hybrid",
