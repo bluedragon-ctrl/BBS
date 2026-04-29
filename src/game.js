@@ -24,7 +24,7 @@ import { showScreen, activeScreen } from './screen.js';
 import { initLog, logMessage, logFlavor, flushLog, awaitLogIdle, isTyping } from './log.js';
 import {
   initRun, startNewRun, continueRun, saveAndQuit, resolveNode,
-  persistRun, refreshContinueButton,
+  persistRun, refreshContinueButton, wipeAllData,
 } from './run.js';
 import { hasSave } from './engine/save.js';
 
@@ -106,6 +106,11 @@ async function handleMenuAction(action) {
       else logMessage('No save to continue.');
       break;
     case 'codex': openCodex('boot'); break;
+    case 'wipe':
+      if (confirm('Wipe all save data and codex? This cannot be undone.')) {
+        wipeAllData();
+      }
+      break;
     case 'quit':
       await showTerminalSequence([
         { text: '> CARRIER LOST', class: 'danger' },
@@ -126,7 +131,7 @@ function wireKeys() {
   window.addEventListener('keydown', (e) => {
     if (activeScreen() === 'map' && isTyping()) flushLog();
     if (activeScreen() === 'boot' && state.bootCompleted) {
-      const map = { n: 'new-run', c: 'continue', k: 'codex', q: 'quit' };
+      const map = { n: 'new-run', c: 'continue', k: 'codex', w: 'wipe', q: 'quit' };
       const action = map[e.key.toLowerCase()];
       if (action) handleMenuAction(action);
     }
@@ -246,6 +251,11 @@ initMapUi({
   log: logMessage,
   activeScreen,
   saveAndQuit,
+  wipeAll: () => {
+    if (confirm('Wipe all save data and codex? This cannot be undone.')) {
+      wipeAllData();
+    }
+  },
   onChoice: (node) => resolveNode(node),
   openCodex: () => openCodex('map'),
   openInventory: () => openInventory('map'),
@@ -304,6 +314,7 @@ window.netro = {
   showTerminalSequence,
   openCodex,
   wipeCodex,
+  wipeAll: wipeAllData,
   fireBarks,
 };
 
