@@ -362,6 +362,12 @@ function openSpellModal() {
     li.dataset.spellId = spellId;
     li.dataset.key = key;
     if (enabled) li.addEventListener('click', () => pickSpell(spellId));
+    li.addEventListener('mouseover', () => {
+      if (!li.classList.contains('disabled')) {
+        spellFocusIndex = i;
+        updateSpellFocus();
+      }
+    });
     list.appendChild(li);
   });
   document.getElementById('spell-modal').classList.remove('hidden');
