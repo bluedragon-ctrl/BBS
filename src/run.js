@@ -17,6 +17,7 @@ import { showTerminalSequence } from './ui/terminal.js';
 import { showScreen } from './screen.js';
 import { logMessage } from './log.js';
 import { formatTokens } from './ui/util.js';
+import { wipeCodex } from './engine/codex.js';
 
 let state = null;
 let setConn = () => {};
@@ -107,6 +108,21 @@ export function backToBoot() {
   state.run = null;
   clearMapRun();
   refreshContinueButton();
+  showScreen('boot');
+}
+
+// Full data reset — wipes the suspended save AND the persistent codex,
+// clears in-memory run state, resets CONN, returns to boot. Used by the
+// boot-menu and map-screen "WIPE DATA" actions and exposed on window.netro.
+export function wipeAllData() {
+  wipeSave();
+  wipeCodex();
+  state.run = null;
+  state.conn = 1.0;
+  setConn(1.0);
+  clearMapRun();
+  refreshContinueButton();
+  logMessage('> All save data and codex wiped.');
   showScreen('boot');
 }
 

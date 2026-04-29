@@ -277,6 +277,9 @@ function handleAction(action) {
     case 'save-quit':
       deps.saveAndQuit();
       break;
+    case 'wipe':
+      if (deps.wipeAll) deps.wipeAll();
+      break;
     case 'move':
       confirmFocused();
       break;
@@ -306,7 +309,7 @@ function wireKeys() {
       }
       return;
     }
-    const shortcut = { s: 'save-quit', i: 'inventory', k: 'codex', x: 'inspect' }[e.key.toLowerCase()];
+    const shortcut = { s: 'save-quit', i: 'inventory', k: 'codex', w: 'wipe', x: 'inspect' }[e.key.toLowerCase()];
     if (shortcut) handleAction(shortcut);
   });
 }
