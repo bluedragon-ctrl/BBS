@@ -58,9 +58,12 @@ function* allModifiers(actor) {
 }
 
 // Returns { mult, add } aggregated across all sources. mult is a product, add is a sum.
-export function damageTakenMods(actor) {
+// A modifier with `damageType: "physical"` (or any other type) only applies to that
+// damage type. Modifiers without `damageType` apply to all incoming damage.
+export function damageTakenMods(actor, damageType) {
   let mult = 1, add = 0;
   for (const m of allModifiers(actor)) {
+    if (m.damageType != null && damageType != null && m.damageType !== damageType) continue;
     if (m.damageTakenMult != null) mult *= m.damageTakenMult;
     if (m.damageTakenAdd  != null) add  += m.damageTakenAdd;
   }
@@ -276,12 +279,13 @@ registerAtom('damage', (atom, ctx) => {
   const t = ctx.target;
   if (!t) return null;
   const raw = Math.max(0, Math.floor(evalExpr(atom.amount, ctx)));
+  const damageType = atom.damageType || 'physical';
   // damageType is a forward-compat tag; current engine reduces all non-pure damage by DEF.
-  // Magic-resist via INT is a planned refinement.
+  // Target-side mult/add can filter on damageType (e.g. physical-resist via damageTakenMult 0.7).
   const def = atom.ignoresDef ? 0 : effectiveStat(t, 'def');
   // Order: raw → DEF → mult → add. ignoresDef skips DEF only; target-side mult/add still apply.
   const afterDef = Math.max(0, raw - def);
-  const { mult, add } = damageTakenMods(t);
+  const { mult, add } = damageTakenMods(t, damageType);
   const dmg = Math.max(0, Math.floor(afterDef * mult) + add);
   t.stats.hp = Math.max(0, (t.stats.hp ?? 0) - dmg);
   ctx.log(`${t.name} takes ${dmg} damage.`);
@@ -302,8 +306,20 @@ registerAtom('damage', (atom, ctx) => {
     if ((t.stats.hp ?? 0) <= 0 && attacker && attacker !== t) {
       fireHooks(attacker, 'onKill', ctx, { target: t });
     }
+    // Lifesteal: heal the attacker for floor(dmg * lifesteal) on hit.
+    // Self-targeted damage (attacker === t) skips lifesteal — no free healing loops.
+    if (atom.lifesteal != null && attacker && attacker !== t) {
+      const stolen = Math.floor(dmg * atom.lifesteal);
+      if (stolen > 0) {
+        const before = attacker.stats.hp ?? 0;
+        const cap = attacker.stats.maxHp ?? before + stolen;
+        attacker.stats.hp = Math.min(cap, before + stolen);
+        const healed = attacker.stats.hp - before;
+        if (healed > 0) ctx.log(`${attacker.name} drains ${healed} HP.`);
+      }
+    }
   }
-  return { kind: 'damage', target: t.id, amount: dmg, damageType: atom.damageType || 'physical' };
+  return { kind: 'damage', target: t.id, amount: dmg, damageType };
 });
 
 registerAtom('heal', (atom, ctx) => {

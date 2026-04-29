@@ -28,6 +28,7 @@ export function cloneActor(def, opts = {}) {
     actionCount: 0,
     dead: false,
     loadout: opts.loadout || null,
+    actionCount: 0,
   };
 }
 
@@ -51,6 +52,7 @@ export function makePlayerActor(opts = {}) {
     energy: 0,
     actionCount: 0,
     dead: false,
+    actionCount: 0,
     loadout: opts.loadout || {
       spells: ['spl_missile', 'spl_minor_mend'],
       consumables: ['itm_heal_run', 'itm_restore_run'],
@@ -288,6 +290,8 @@ export async function runCombat(combat, hooks = {}) {
       if (!isAlive(actor)) { consumeAction(actor); continue; }
 
       // 3. Action — but cannotAct (e.g. stunned) consumes the turn without acting.
+      // actionCount tracks how many real actions an actor has taken (drives turn-aware
+      // condition expressions like `self.actionCount % 2`). cannotAct turns don't count.
       if (actorHasFlag(actor, 'cannotAct')) {
         combat.logFn(`${actor.name} cannot act.`);
       } else if (actor.isPlayer) {

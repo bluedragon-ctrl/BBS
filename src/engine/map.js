@@ -41,7 +41,7 @@ const NODES_PER_LAYER = [1, 3, 3, 4, 3, 2, 1];
 const LAYER_WEIGHTS = [
   /* layer 1 */ { combat: 4, event: 1 },
   /* layer 2 */ { combat: 3, event: 1, cache: 1 },
-  /* layer 3 */ { combat: 3, shop: 1, shrine: 1, event: 1, cache: 1 },
+  /* layer 3 */ { combat: 3, shop: 1, shrine: 1, elite: 1, event: 1, cache: 1 },
   /* layer 4 */ { combat: 2, shop: 1, shrine: 1, elite: 1, cache: 1, event: 1 },
   /* layer 5 */ { combat: 2, elite: 2, shop: 1, shrine: 1 },
 ];
@@ -168,6 +168,19 @@ const COMBAT_RECIPES = {
     ['mon_kobold_striker', 'mon_goblin_warrior'],
     ['mon_kobold_striker', 'mon_kobold_striker', 'mon_kobold_striker'],
   ],
+  3: [
+    ['mon_bone_walker', 'mon_crypt_ghoul'],
+    ['mon_bone_walker', 'mon_bone_walker', 'mon_goblin_scout'],
+    ['mon_acidic_ooze', 'mon_crypt_ghoul'],
+    ['mon_acidic_ooze', 'mon_bone_walker', 'mon_bone_walker'],
+  ],
+};
+
+// Per-layer elite recipes. Goblin Chief is Act 1's L3 elite (mini-boss).
+const ELITE_RECIPES = {
+  3: [
+    ['mon_goblin_chief'],
+  ],
 };
 
 function makeEncounter(type, rng, layer = 0) {
@@ -180,8 +193,14 @@ function makeEncounter(type, rng, layer = 0) {
     const id = rng() < 0.5 ? 'mon_watchdog' : 'mon_glyph_wraith';
     return { enemyIds: [id] };
   }
-  if (type === 'elite')  return { enemyIds: ['mon_glyph_wraith', 'mon_watchdog'] };
-  if (type === 'boss')   return { enemyIds: ['mon_glyph_wraith', 'mon_glyph_wraith'] };
+  if (type === 'elite') {
+    const recipes = ELITE_RECIPES[layer];
+    if (recipes && recipes.length) {
+      return { enemyIds: recipes[Math.floor(rng() * recipes.length)] };
+    }
+    return { enemyIds: ['mon_glyph_wraith', 'mon_watchdog'] };
+  }
+  if (type === 'boss')   return { enemyIds: ['mon_crimson_wyrm'] };
   return null;
 }
 
