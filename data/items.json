@@ -288,5 +288,18 @@
     "cost": 3,
     "blurb": "A small blue stone in a plain silver setting. Cold to the touch.",
     "modifiers": [{ "stat": "maxMp", "add": 2 }]
+  },
+
+  {
+    "id": "itm_crown_of_eldarmark",
+    "kind": "wearable",
+    "level": 1,
+    "slot": "amulet",
+    "tier": 2,
+    "name": "CROWN OF ELDARMARK",
+    "cost": 0,
+    "noShop": true,
+    "blurb": "Plain gold, worn smooth by centuries on heads now dust. It fits.",
+    "modifiers": [{ "stat": "int", "add": 2 }]
   }
 ]

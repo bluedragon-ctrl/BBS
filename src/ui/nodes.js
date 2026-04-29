@@ -179,7 +179,7 @@ export async function showCache(node) {
     .filter(s => (s.level ?? 1) === level && !knownSpells.has(s.id));
   const ownedWearables = new Set(player.loadout.wearables || []);
   const candidateWearables = (deps.data.list('items') || [])
-    .filter(it => it.kind === 'wearable' && (it.level ?? 1) === level && !ownedWearables.has(it.id));
+    .filter(it => it.kind === 'wearable' && (it.level ?? 1) === level && !it.noShop && !ownedWearables.has(it.id));
 
   function rollDrop() {
     // Pool selection: 60% spell if any unknown, 30% wearable if any new, else tokens.
@@ -383,6 +383,7 @@ export async function showShop(node) {
   // Pool: all consumables + wearables not already owned this run.
   const allItems = (deps.data.list('items') || []).filter(it => {
     if ((it.level ?? 1) !== level) return false;
+    if (it.noShop) return false;
     if (it.kind === 'consumable') return true;
     if (it.kind === 'wearable')   return !owned.has(it.id);
     return false;
