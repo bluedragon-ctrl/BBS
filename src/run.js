@@ -2,6 +2,7 @@
 
 import { makeRng, randomSeed } from './engine/rng.js';
 import { makePlayerActor } from './engine/combat.js';
+import { addWearable } from './engine/loadout.js';
 import { generateMap, NODE_LABEL, NODE_FLAVOR } from './engine/map.js';
 import {
   hasSave, save as saveSlot, load as loadSlot, wipe as wipeSave,
@@ -141,9 +142,10 @@ export async function resolveNode(node, opts = {}) {
         renderMap();
         return;
       }
-      // Victory — clear combat statuses, grant token reward.
+      // Victory — clear combat statuses, grant token reward, resolve loot drops.
       state.run.player.statuses = [];
       grantCombatTokens(node.type);
+      grantCombatLoot(result.finalCombat);
     } else if (node.type === 'shrine') {
       await showShrine(node);
     } else if (node.type === 'cache') {
@@ -185,6 +187,30 @@ function grantCombatTokens(type) {
   if (amt > 0) {
     state.run.tokens = (state.run.tokens || 0) + amt;
     logMessage(`> +${formatTokens(amt)}.`);
+  }
+}
+
+function grantCombatLoot(combat) {
+  if (!combat?.actors) return;
+  for (const actor of combat.actors) {
+    if (!actor.dead || actor.team !== 'enemy' || !actor.defId) continue;
+    const def = state.data.monster(actor.defId);
+    if (!def?.loot?.length) continue;
+    for (const entry of def.loot) {
+      const id     = typeof entry === 'string' ? entry : entry.id;
+      const chance = typeof entry === 'string' ? 1.0   : (entry.chance ?? 1.0);
+      if (!id || state.rng() > chance) continue;
+      const item = state.data.item(id);
+      if (!item) continue;
+      if (item.kind === 'wearable') {
+        if (addWearable(state.run.player, id)) {
+          logMessage(`> ${actor.name} dropped ${item.name}.`);
+        }
+      } else if (item.kind === 'consumable') {
+        state.run.player.loadout.consumables.push(id);
+        logMessage(`> ${actor.name} dropped ${item.name}.`);
+      }
+    }
   }
 }
 

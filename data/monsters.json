@@ -275,7 +275,7 @@
          {"type": "applyStatus", "effect": "burn", "target": "target", "duration": 3}
        ]}
     ],
-    "loot": []
+    "loot": ["itm_crown_of_eldarmark"]
   },
   {
     "id": "mon_glyph_wraith",
