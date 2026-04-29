@@ -150,6 +150,61 @@
     "codexBlurb": "Reactive thorn-glyph — striking you costs the striker."
   },
   {
+    "id": "corroded",
+    "name": "CORRODED",
+    "shortName": "corrode",
+    "kind": "debuff",
+    "tags": ["acid"],
+    "stackMode": "refresh",
+    "duration": 4,
+    "modifiers": [{"stat": "def", "add": -1}],
+    "hooks": {},
+    "codexBlurb": "Acid pitting your guard — pieces flake away with every step."
+  },
+  {
+    "id": "enraged",
+    "name": "ENRAGED",
+    "shortName": "rage",
+    "kind": "buff",
+    "tags": ["boss"],
+    "stackMode": "refresh",
+    "duration": -1,
+    "modifiers": [
+      {"stat": "atk", "add": 2},
+      {"stat": "spd", "mult": 1.2}
+    ],
+    "hooks": {},
+    "codexBlurb": "Past pain. Past reason. Twice the swing, twice the speed."
+  },
+  {
+    "id": "burn",
+    "name": "BURNING",
+    "shortName": "burn",
+    "kind": "debuff",
+    "tags": ["fire", "dot", "magical"],
+    "stackMode": "refresh",
+    "duration": 3,
+    "modifiers": [],
+    "hooks": {
+      "onTurnStart": [
+        {"type": "damage", "target": "self", "amount": "1d4", "ignoresDef": true, "damageType": "magical"}
+      ]
+    },
+    "codexBlurb": "Robes catching, hair singeing — flame eats at the edges of you."
+  },
+  {
+    "id": "bone_armor",
+    "name": "BONE ARMOR",
+    "shortName": "bone",
+    "kind": "buff",
+    "tags": ["physical", "innate"],
+    "stackMode": "refresh",
+    "duration": -1,
+    "modifiers": [{"damageTakenMult": 0.7, "damageType": "physical"}],
+    "hooks": {},
+    "codexBlurb": "Hardened bone deflects steel. Magic passes straight through."
+  },
+  {
     "id": "preparing",
     "name": "PREPARING",
     "shortName": "ready",

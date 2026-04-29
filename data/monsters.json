@@ -127,6 +127,146 @@
     "loot": []
   },
   {
+    "id": "mon_bone_walker",
+    "name": "BONE WALKER",
+    "stats": {"hp": 14, "maxHp": 14, "mp": 0, "maxMp": 0, "spd": 9, "def": 3, "int": 0, "atk": 4},
+    "ascii": [
+      "    ___    ",
+      "   /o o\\   ",
+      "   \\\\v//   ",
+      "  __|=|__  ",
+      "  /| | |\\  ",
+      "  ^^   ^^  "
+    ],
+    "ai": "aggressive",
+    "hooks": {
+      "onSpawn": [
+        {"type": "applyStatus", "target": "self", "effect": "bone_armor", "duration": -1}
+      ]
+    },
+    "actions": [
+      {"name": "rakes", "weight": 1,
+       "effects": [{"type": "damage", "target": "target", "amount": "1d4+ATK", "damageType": "physical"}]}
+    ],
+    "loot": []
+  },
+  {
+    "id": "mon_crypt_ghoul",
+    "name": "CRYPT GHOUL",
+    "stats": {"hp": 18, "maxHp": 18, "mp": 0, "maxMp": 0, "spd": 10, "def": 1, "int": 0, "atk": 4},
+    "ascii": [
+      "   .---.   ",
+      "  /. o .\\  ",
+      "  \\ ___ /  ",
+      " __\\___/__ ",
+      "  /| | |\\  ",
+      "   ^   ^   "
+    ],
+    "ai": "aggressive",
+    "actions": [
+      {"name": "claws", "weight": 1, "condition": "self.actionCount % 3 !== 2",
+       "effects": [{"type": "damage", "target": "target", "amount": "1d4+ATK", "damageType": "physical"}]},
+      {"name": "feasts on", "weight": 1, "condition": "self.actionCount % 3 === 2",
+       "effects": [{"type": "damage", "target": "target", "amount": "5+ATK", "damageType": "physical", "lifesteal": 1.0}]}
+    ],
+    "loot": []
+  },
+  {
+    "id": "mon_acidic_ooze",
+    "name": "ACIDIC OOZE",
+    "stats": {"hp": 20, "maxHp": 20, "mp": 0, "maxMp": 0, "spd": 7, "def": 0, "int": 0, "atk": 2},
+    "ascii": [
+      "   _____   ",
+      "  /~~~~~\\  ",
+      " ( o   o ) ",
+      "  \\_____/  ",
+      "   ~~~~~   "
+    ],
+    "ai": "aggressive",
+    "actions": [
+      {"name": "engulfs", "weight": 1,
+       "effects": [
+         {"type": "damage", "target": "target", "amount": "1d3+ATK", "damageType": "physical"},
+         {"type": "applyStatus", "effect": "corroded", "target": "target", "duration": 4}
+       ]}
+    ],
+    "loot": []
+  },
+  {
+    "id": "mon_goblin_chief",
+    "name": "GOBLIN CHIEF",
+    "stats": {"hp": 40, "maxHp": 40, "mp": 0, "maxMp": 0, "spd": 10, "def": 3, "int": 0, "atk": 5},
+    "ascii": [
+      "   .===.   ",
+      "  ($>_<$)  ",
+      "  /| W |\\  ",
+      " ===|+|=== ",
+      "   | | |   ",
+      "   ^   ^   "
+    ],
+    "ai": "aggressive",
+    "hooks": {
+      "onDamaged": [
+        {"type": "cleanse", "target": "self", "kind": "debuff",
+         "condition": "self.stats.hp < self.stats.maxHp * 0.5 && !self.statuses.some(s => s.def.id === 'enraged')"},
+        {"type": "applyStatus", "target": "self", "effect": "enraged", "duration": -1,
+         "condition": "self.stats.hp < self.stats.maxHp * 0.5 && !self.statuses.some(s => s.def.id === 'enraged')"}
+      ]
+    },
+    "actions": [
+      {"name": "lays a heavy blow on", "weight": 1,
+       "effects": [{"type": "damage", "target": "target", "amount": "1d6+ATK", "damageType": "physical"}]}
+    ],
+    "loot": []
+  },
+  {
+    "id": "mon_crimson_wyrm",
+    "name": "CRIMSON WYRM",
+    "stats": {"hp": 80, "maxHp": 80, "mp": 0, "maxMp": 0, "spd": 10, "def": 4, "int": 4, "atk": 7},
+    "ascii": [
+      "        ___           ",
+      "     _-(   )-_        ",
+      "    /   o   \\         ",
+      " __( ~~v~v~~ )__      ",
+      " /  \\\\=======//  \\    ",
+      " ~~~  ~ ~~~~ ~  ~~~   ",
+      "       ^^^             "
+    ],
+    "ai": "boss",
+    "hooks": {
+      "onDamaged": [
+        {"type": "cleanse", "target": "self", "kind": "debuff",
+         "condition": "self.stats.hp < self.stats.maxHp * 0.5 && !self.statuses.some(s => s.def.id === 'enraged')"},
+        {"type": "applyStatus", "target": "self", "effect": "enraged", "duration": -1,
+         "condition": "self.stats.hp < self.stats.maxHp * 0.5 && !self.statuses.some(s => s.def.id === 'enraged')"}
+      ]
+    },
+    "actions": [
+      {"name": "rakes with claws", "weight": 1,
+       "condition": "self.actionCount % 3 === 0 && !self.statuses.some(s => s.def.id === 'enraged')",
+       "effects": [{"type": "damage", "target": "target", "amount": "1d6+ATK", "damageType": "physical"}]},
+      {"name": "snaps its jaws on", "weight": 1,
+       "condition": "self.actionCount % 3 === 1 && !self.statuses.some(s => s.def.id === 'enraged')",
+       "effects": [{"type": "damage", "target": "target", "amount": "1d8+ATK", "damageType": "physical"}]},
+      {"name": "breathes searing fire on", "weight": 1,
+       "condition": "self.actionCount % 3 === 2 && !self.statuses.some(s => s.def.id === 'enraged')",
+       "effects": [
+         {"type": "damage", "target": "target", "amount": "1d4+5", "damageType": "magical"},
+         {"type": "applyStatus", "effect": "burn", "target": "target", "duration": 3}
+       ]},
+      {"name": "claws with feral fury at", "weight": 1,
+       "condition": "self.statuses.some(s => s.def.id === 'enraged') && self.actionCount % 2 === 1",
+       "effects": [{"type": "damage", "target": "target", "amount": "1d8+ATK", "damageType": "physical"}]},
+      {"name": "vomits white-hot flame across", "weight": 1,
+       "condition": "self.statuses.some(s => s.def.id === 'enraged') && self.actionCount % 2 === 0",
+       "effects": [
+         {"type": "damage", "target": "target", "amount": "1d6+5", "damageType": "magical"},
+         {"type": "applyStatus", "effect": "burn", "target": "target", "duration": 3}
+       ]}
+    ],
+    "loot": []
+  },
+  {
     "id": "mon_glyph_wraith",
     "name": "GLYPH WRAITH",
     "stats": {"hp": 18, "maxHp": 18, "mp": 0, "maxMp": 0, "spd": 12, "def": 2, "int": 2, "atk": 3},
