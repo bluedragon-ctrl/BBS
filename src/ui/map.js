@@ -1,7 +1,8 @@
 // Map UI — renders current node + immediate next-layer choices, handles input.
 
 import { NODE_GLYPH, NODE_LABEL, NODE_FLAVOR } from '../engine/map.js';
-import { formatStatsBlock, formatEquippedSlots } from './util.js';
+import { formatSceneString, sceneContextFromNode } from '../engine/scene.js';
+import { formatStatsBlock, formatEquippedSlots, escapeHtml } from './util.js';
 
 let deps = null;
 let run = null;             // shared run state object from game.js
@@ -211,15 +212,18 @@ function renderInspect() {
     body.textContent = '(no choices)';
     return;
   }
-  const lines = [
-    NODE_LABEL[focused.type] || focused.type.toUpperCase(),
-    '',
-    NODE_FLAVOR[focused.type] || '',
-  ];
-  if (focused.encounter?.enemyIds) {
-    lines.push('', `ENEMIES: ${focused.encounter.enemyIds.length}`);
+  const label = NODE_LABEL[focused.type] || focused.type.toUpperCase();
+  const ctx = sceneContextFromNode(focused, deps.data);
+  const rawRoom = focused.scene?.room || NODE_FLAVOR[focused.type] || '';
+  const room = formatSceneString(rawRoom, ctx);
+  let html = escapeHtml(label) + '\n\n';
+  if (room) {
+    html += `<span class="flavor-text">${escapeHtml(room)}</span>`;
   }
-  body.textContent = lines.join('\n');
+  if (focused.encounter?.enemyIds) {
+    html += `\n\nENEMIES: ${focused.encounter.enemyIds.length}`;
+  }
+  body.innerHTML = html;
 }
 
 // ---------- Input ----------

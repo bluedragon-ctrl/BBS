@@ -99,6 +99,16 @@ export function showNodeModal({ title, flavor, choices, onPick }) {
   });
 }
 
+// Prepend a node's scene description (room + optional pre) to a modal's
+// existing flavor body. Returns the merged string. Both inputs may be empty.
+function mergeSceneFlavor(scene, baseFlavor = '') {
+  const parts = [];
+  if (scene?.room) parts.push(scene.room);
+  if (scene?.pre)  parts.push(scene.pre);
+  if (baseFlavor)  parts.push(baseFlavor);
+  return parts.join('\n\n');
+}
+
 function buildPlayerCtx() {
   const run = deps.getRun();
   return makeContext(run.player, run.player, {
@@ -114,12 +124,12 @@ function buildPlayerCtx() {
 // SHRINE
 // ====================================================================
 
-export async function showShrine() {
+export async function showShrine(node) {
   const run = deps.getRun();
   const player = run.player;
   await showNodeModal({
     title: 'SHRINE',
-    flavor: 'A pocket of static calm.',
+    flavor: mergeSceneFlavor(node?.scene, 'A pocket of static calm.'),
     choices: [
       { key: '1', label: 'DEFRAG', detail: 'restore HP to full' },
       { key: '2', label: 'RESYNC', detail: 'restore 25% CONN' },
@@ -153,10 +163,11 @@ const FLAVOR_NAMES = [
 ];
 const REVEAL_NOISE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-export async function showCache() {
+export async function showCache(node) {
   const run = deps.getRun();
   const player = run.player;
   const rng = deps.rng;
+  const sceneRoom = node?.scene?.room || '';
 
   const selectableCount = 1 + Math.floor(rng() * 3); // 1-3
   const flavorCount = 3 + Math.floor(rng() * 4);     // 3-6
@@ -224,7 +235,7 @@ export async function showCache() {
 
   titleEl.textContent = 'CACHE';
   const dirHash = (Math.floor(rng() * 0xFFFF)).toString(16).padStart(4, '0');
-  const intro = `DIR: /tmp/dump.${dirHash}\n\n`;
+  const intro = (sceneRoom ? `${sceneRoom}\n\n` : '') + `DIR: /tmp/dump.${dirHash}\n\n`;
   redraw(bodyEl, intro, rows);
 
   const actions = document.createElement('div');
@@ -331,7 +342,7 @@ function redraw(bodyEl, intro, rows) {
 // EVENT
 // ====================================================================
 
-export async function showEvent() {
+export async function showEvent(node) {
   const events = deps.data.list('events') || [];
   if (!events.length) {
     deps.log('> No events authored.');
@@ -341,7 +352,7 @@ export async function showEvent() {
 
   await showNodeModal({
     title: evt.title,
-    flavor: evt.description,
+    flavor: mergeSceneFlavor(node?.scene, evt.description),
     choices: [
       ...evt.choices.map((c, i) => ({ key: String(i + 1), label: c.label })),
     ],
@@ -362,7 +373,7 @@ export async function showEvent() {
 // SHOP
 // ====================================================================
 
-export async function showShop() {
+export async function showShop(node) {
   const run = deps.getRun();
   const owned = new Set(run.player.loadout?.wearables || []);
   // Pool: all consumables + wearables not already owned this run.
@@ -404,7 +415,10 @@ export async function showShop() {
   }
 
   while (!leaving) {
-    const baseFlavor = 'A directory of dropped files for sale. All transactions final.';
+    const baseFlavor = mergeSceneFlavor(
+      node?.scene,
+      'A directory of dropped files for sale. All transactions final.',
+    );
     const fb = lastFeedback ? `\n\n>> ${lastFeedback.text}` : '';
     const flavor = baseFlavor + fb + inventoryLine();
     const choices = buildChoices();

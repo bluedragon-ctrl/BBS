@@ -1,1 +1,137 @@
-[]
+[
+  {
+    "id": "scene_entry_forest_path",
+    "match": { "type": "combat", "layer": 0 },
+    "scene": {
+      "room": [
+        "The forest path narrows into shadow. Twisted roots cross the trail and a faint ozone smell lingers — packets, perhaps, leaking from a broken node downstream.",
+        "A rough-hewn track at the wood's edge. The trees lean inward; somewhere ahead, a stream rattles over stones."
+      ],
+      "pre": [
+        "A {enemies[0].name} skitters out from beneath the roots and bares its teeth.",
+        "Movement in the leaves — a {enemies[0].name} drops onto the trail in front of you.",
+        "You hear claws on bark. A {enemies[0].name} circles in from the side."
+      ],
+      "post": [
+        "The path ahead clears. Something else is watching from deeper in.",
+        "Silence. You wipe your hands on your robe and continue.",
+        "The forest exhales. A crow lifts off, far away, then nothing."
+      ]
+    }
+  },
+  {
+    "id": "scene_entry_ruined_arch",
+    "match": { "type": "combat", "layer": 0 },
+    "scene": {
+      "room": [
+        "A ruined stone archway, half-swallowed by ivy. The keystone bears a glyph that shifts when you don't look directly at it.",
+        "What was a gatehouse is now four crumbling pillars and a wedge of ivy. The wind here smells of old paper."
+      ],
+      "pre": [
+        "A {enemies[0].name} hisses from behind the archway and lunges.",
+        "Out of the ivy lurches a {enemies[0].name}, eyes flat and bright."
+      ],
+      "post": [
+        "The archway is quiet again. The glyph on the keystone has stopped shifting.",
+        "You stand panting beneath the arch. The ivy stirs, then is still."
+      ]
+    }
+  },
+  {
+    "id": "scene_entry_marsh_edge",
+    "match": { "type": "combat", "layer": 0 },
+    "scene": {
+      "room": [
+        "The trail dips into a sour-smelling marsh. Reeds taller than a man flank the only passable path.",
+        "Black water on both sides of a narrow causeway. Insects spell out little patterns above the surface and disperse."
+      ],
+      "pre": [
+        "The reeds part — a {enemies[0].name} bursts toward you in a spray of muck.",
+        "A {enemies[0].name} explodes out of the marsh water, spitting weeds and venom."
+      ],
+      "post": [
+        "The reeds settle. Frogsong returns somewhere far off.",
+        "The marsh resumes its slow breathing. You squelch onward."
+      ]
+    }
+  },
+  {
+    "id": "scene_goblin_camp",
+    "match": { "type": "combat", "layer": 2 },
+    "scene": {
+      "room": "Small goblin camp at the edge of a moss-eaten clearing. Embers pop in a stone-ringed firepit; a half-eaten haunch turns slowly on a spit.",
+      "pre": [
+        "A bunch of goblins sit calmly around the campfire. They notice you, jump to their feet, and attack.",
+        "Around the fire, a {enemies[0].name} is mid-laugh when it sees you. The laugh turns into a war-cry."
+      ],
+      "post": [
+        "All enemies lie sprawled around the dying fire. The spit creaks once, twice, then stops.",
+        "The camp is yours. The fire pops once, mournfully, and gutters."
+      ]
+    }
+  },
+  {
+    "id": "scene_default_combat",
+    "match": { "type": "combat" },
+    "scene": {
+      "room": "A pocket of hostile traffic. Stale air, the green light of error logs.",
+      "pre": [
+        "Hostile processes lock onto your handle.",
+        "A {enemies[0].name} snaps into focus and lunges."
+      ],
+      "post": [
+        "Silence. The hostile traffic dissipates.",
+        "The room is yours. The error logs go quiet."
+      ]
+    }
+  },
+  {
+    "id": "scene_default_elite",
+    "match": { "type": "elite" },
+    "scene": {
+      "room": "Heavy traffic congeals here. The walls of the node are slick with packet residue.",
+      "pre": "Something larger than the rest stirs at the back of the room and turns to face you.",
+      "post": "The hostile process collapses into noise. The room exhales."
+    }
+  },
+  {
+    "id": "scene_default_boss",
+    "match": { "type": "boss" },
+    "scene": {
+      "room": "The SYSOP's chamber. Every surface is a screen, every screen shows you.",
+      "pre": "The SYSOP turns, very slowly, and acknowledges your handle for the first time.",
+      "post": "The SYSOP's avatar dissolves. The screens go to snow."
+    }
+  },
+  {
+    "id": "scene_default_shrine",
+    "match": { "type": "shrine" },
+    "scene": {
+      "room": [
+        "A pocket of static calm — a quiet glade where the BBS hum drops to a whisper.",
+        "A small clearing where the connection feels almost clean. Something old has been kept here."
+      ]
+    }
+  },
+  {
+    "id": "scene_default_cache",
+    "match": { "type": "cache" },
+    "scene": {
+      "room": "An archive node. Directories nest into directories; some are intact, most are not."
+    }
+  },
+  {
+    "id": "scene_default_shop",
+    "match": { "type": "shop" },
+    "scene": {
+      "room": "A small storefront in the network — a flickering ANSI sign reads WARES, all caps."
+    }
+  },
+  {
+    "id": "scene_default_event",
+    "match": { "type": "event" },
+    "scene": {
+      "room": "Something irregular hums in this node. The packets here travel sideways."
+    }
+  }
+]

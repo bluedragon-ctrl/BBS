@@ -46,9 +46,10 @@ const LAYER_WEIGHTS = [
   /* layer 5 */ { combat: 2, elite: 2, shop: 1, shrine: 1 },
 ];
 
-export function generateMap(rng) {
+export function generateMap(rng, data = null) {
   const nodes = new Map();
   const layers = [];
+  const sceneTemplates = data ? data.list('nodes').filter(t => t.scene) : [];
 
   for (let li = 0; li < LAYERS; li++) {
     const count = NODES_PER_LAYER[li];
@@ -65,6 +66,7 @@ export function generateMap(rng) {
         encounter: makeEncounter(type, rng, li),
         visited: false,
       };
+      node.scene = pickScene(sceneTemplates, node, rng);
       nodes.set(id, node);
       layer.push(node);
     }
@@ -106,6 +108,41 @@ export function generateMap(rng) {
 function pickType(rng, weights) {
   const items = Object.entries(weights).map(([type, w]) => ({ type, w }));
   return weightedPick(rng, items, it => it.w).type;
+}
+
+// Score scene templates by matcher specificity, pick a random one from the
+// most specific tier, then resolve any array-typed room/pre/post fields to a
+// single string. Matcher fields: type (required), layer (optional, exact match).
+function pickScene(templates, node, rng) {
+  if (!templates.length) return null;
+  const matches = templates
+    .filter(t => t.match?.type === node.type)
+    .filter(t => t.match?.layer == null || t.match.layer === node.layer);
+  if (!matches.length) return null;
+  const maxSpecificity = matches.reduce((m, t) => {
+    const s = (t.match?.layer != null ? 1 : 0);
+    return s > m ? s : m;
+  }, 0);
+  const tier = matches.filter(t => (t.match?.layer != null ? 1 : 0) === maxSpecificity);
+  const pick = tier[Math.floor(rng() * tier.length)];
+  return resolveSceneVariants(pick.scene, rng);
+}
+
+// room/pre/post may each be a string or an array of strings. Arrays are
+// resolved to one element via rng so the saved node.scene is always a flat
+// {room?, pre?, post?} of plain strings — downstream consumers don't need to
+// know about variants.
+function resolveSceneVariants(scene, rng) {
+  const out = {};
+  for (const k of ['room', 'pre', 'post']) {
+    const v = scene[k];
+    if (Array.isArray(v) && v.length) {
+      out[k] = v[Math.floor(rng() * v.length)];
+    } else if (v != null) {
+      out[k] = v;
+    }
+  }
+  return out;
 }
 
 // Per-layer combat recipes. Layer index matches map layer (0 = entry, last = boss).

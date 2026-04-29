@@ -34,7 +34,7 @@ export function startNewRun() {
   state.conn = 1.0;
   state.run = {
     seed: state.seed,
-    map: generateMap(state.rng),
+    map: generateMap(state.rng, state.data),
     currentNodeId: null,
     previousNodeId: null,
     visitedIds: [],
@@ -127,6 +127,7 @@ export async function resolveNode(node, opts = {}) {
       const result = await enterCombat({
         enemies: node.encounter.enemyIds,
         player: state.run.player,
+        scene: node.scene || null,
       });
       if (result.result === 'defeat') {
         wipeSave();
@@ -185,10 +186,11 @@ function grantCombatTokens(type) {
 }
 
 function showStubNodeModal(node) {
+  const baseFlavor = (node.scene?.room || NODE_FLAVOR[node.type] || '') +
+    '\n\nThis node type is not yet implemented. Press [Enter] to leave.';
   return showNodeModal({
     title: NODE_LABEL[node.type] || node.type.toUpperCase(),
-    flavor: (NODE_FLAVOR[node.type] || '') +
-      '\n\nThis node type is not yet implemented. Press [Enter] to leave.',
+    flavor: baseFlavor,
     choices: [{ key: 'L', label: 'LEAVE', isLeave: true }],
   });
 }

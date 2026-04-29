@@ -4,11 +4,12 @@
 import { startCombat, runCombat, makePlayerActor, buildEnemyActors } from '../engine/combat.js';
 import { ticksUntilAct, isAlive } from '../engine/scheduler.js';
 import { effectiveStat } from '../engine/atoms.js';
+import { formatSceneString, sceneContextFromCombat } from '../engine/scene.js';
 import { showTerminalSequence } from './terminal.js';
 import { triggerGlitch, corruptName } from './glitch.js';
 import { sleep, escapeHtml, formatSpellCost, countBy, formatStatsBlock, formatStatLine } from './util.js';
 
-let deps = null;          // { data, rng, log, showScreen, activeScreen, getConn, onConnCost }
+let deps = null;          // { data, rng, log, logFlavor, awaitLogIdle, showScreen, activeScreen, getConn, onConnCost }
 let currentCombat = null;
 let resolvePlayerAction = null;
 let uiState = 'idle';     // 'idle' | 'inspectMode' | 'pickTarget' | 'pickSpell' | 'awaitingEngine'
@@ -17,6 +18,7 @@ let inspectActorId = null;
 let spellFocusIndex = 0;
 let targetFocusIndex = 0;
 let connDrainedThisTurn = 0;
+let currentScene = null;  // { room, pre, post } from the active node — null when absent
 let lastStatsHtml = '';
 let lastInspectHtml = '';
 let lastListHtml = '';
@@ -61,7 +63,7 @@ function colorizeActorNames(msg, allActors) {
   return segments.length === 1 ? segments[0].text : segments;
 }
 
-export async function enterCombat({ enemies = ['mon_glyph_wraith'], player = null } = {}) {
+export async function enterCombat({ enemies = ['mon_glyph_wraith'], player = null, scene = null } = {}) {
   if (!player) player = makePlayerActor();
 
   const conn = deps.getConn?.() ?? 1;
@@ -69,6 +71,8 @@ export async function enterCombat({ enemies = ['mon_glyph_wraith'], player = nul
   // Snapshot the BBS's view of each name. Worse connection at spawn =
   // more characters arrive wrong. Stable for the fight.
   for (const a of enemyActors) a.name = corruptName(a.name, conn);
+
+  currentScene = scene || null;
 
   currentCombat = startCombat({
     player, enemies: enemyActors,
@@ -80,12 +84,21 @@ export async function enterCombat({ enemies = ['mon_glyph_wraith'], player = nul
     },
   });
 
-  inspectActorId = player.id;
+  // Default inspect to "nothing selected" so room flavor surfaces; player
+  // can arrow/click to inspect actors instead.
+  inspectActorId = null;
   uiState = 'idle';
   pendingAction = null;
   setPrompt('');
   deps.showScreen('combat');
   renderAll();
+
+  // Pre-flavor: type into the log and let it land before the scheduler starts.
+  if (currentScene?.pre && deps.logFlavor) {
+    const ctx = sceneContextFromCombat(currentCombat);
+    deps.logFlavor(formatSceneString(currentScene.pre, ctx));
+    if (deps.awaitLogIdle) await deps.awaitLogIdle();
+  }
 
   const { result } = await runCombat(currentCombat, {
     getPlayerAction: handleGetPlayerAction,
@@ -117,8 +130,70 @@ export async function enterCombat({ enemies = ['mon_glyph_wraith'], player = nul
 
   setPrompt(`COMBAT ENDED: ${result.toUpperCase()}`);
   renderAll();
-  await sleep(1200);
+
+  // Post-flavor: only on victory, and only if scene has a post line.
+  // Drop selection so inspect falls back to the room, then type the post line
+  // and gate the screen exit on a player keypress / click.
+  if (result === 'victory' && currentScene?.post && deps.logFlavor) {
+    inspectActorId = null;
+    renderInspect();
+    const ctx = sceneContextFromCombat(currentCombat);
+    deps.logFlavor(formatSceneString(currentScene.post, ctx));
+    if (deps.awaitLogIdle) await deps.awaitLogIdle();
+    setPrompt('[press any key to leave]');
+    await waitForDismiss();
+  } else {
+    await sleep(1200);
+  }
+
+  currentScene = null;
   return { result, player, finalCombat: currentCombat };
+}
+
+function waitForDismiss() {
+  return new Promise(resolve => {
+    function onKey(e) {
+      // Ignore modifier keys so a stray Ctrl/Shift doesn't accidentally dismiss.
+      if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return;
+      cleanupPrimary();
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      // Swallow any further keydown of this same key until the player releases
+      // it — prevents auto-repeat (or a still-held key) from leaking into the
+      // newly-active map screen and immediately confirming the focused node.
+      armSwallow(e.key);
+      resolve();
+    }
+    function onClick(e) {
+      if (e.target.closest('button')) return; // let the button bar work normally
+      cleanupPrimary();
+      resolve();
+    }
+    function cleanupPrimary() {
+      window.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('click', onClick, true);
+    }
+    window.addEventListener('keydown', onKey, true);
+    window.addEventListener('click', onClick, true);
+  });
+}
+
+// Swallow further keydowns of `key` (capture phase, before any screen handler)
+// until the corresponding keyup fires. Self-cleans on release.
+function armSwallow(key) {
+  function swallow(e) {
+    if (e.key === key) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }
+  function release(e) {
+    if (e.key !== key) return;
+    window.removeEventListener('keydown', swallow, true);
+    window.removeEventListener('keyup', release, true);
+  }
+  window.addEventListener('keydown', swallow, true);
+  window.addEventListener('keyup', release, true);
 }
 
 // ---------- Engine bridge ----------
@@ -602,7 +677,19 @@ function renderInspect() {
   const body = document.querySelector('section[data-screen="combat"] .inspect-body');
   if (!body) return;
   const actor = currentCombat.actors.find(a => a.id === inspectActorId);
-  if (!actor) { body.textContent = '(click a combatant)'; return; }
+  if (!actor) {
+    if (currentScene?.room) {
+      const ctx = sceneContextFromCombat(currentCombat);
+      const room = formatSceneString(currentScene.room, ctx);
+      const cacheKey = '__room__|' + room;
+      if (cacheKey === lastInspectHtml) return;
+      lastInspectHtml = cacheKey;
+      body.innerHTML = `<span class="flavor-text">${escapeHtml(room)}</span>`;
+    } else {
+      body.textContent = '(click a combatant)';
+    }
+    return;
+  }
   const lines = [];
   if (actor.defId) {
     const def = deps.data.monster(actor.defId);

@@ -16,6 +16,7 @@
     <div id="flicker"></div>
 
     <main id="screen">
+      <div class="screen-stage">
 
       <!-- BOOT SCREEN -->
       <section data-screen="boot" class="active">
@@ -67,13 +68,8 @@ DEF   2   SPD 10
               <pre class="inspect-body" data-glitchable>(nothing selected)</pre>
             </div>
           </aside>
-        </div>
 
-        <div class="log-strip">
-          <div class="log-body" data-glitchable>
-            <div>&gt; You connect to the BBS.</div>
-            <div>&gt; The cursor blinks expectantly.</div>
-          </div>
+          <div class="log-slot"></div>
         </div>
 
         <nav class="button-bar">
@@ -109,6 +105,8 @@ DEF   2   SPD 10
               <pre class="inspect-body" data-glitchable>(empty)</pre>
             </div>
           </aside>
+
+          <div class="log-slot"></div>
         </div>
 
         <nav class="button-bar">
@@ -146,6 +144,8 @@ DEF   2   SPD 10
               <pre class="inspect-body" data-glitchable>(focus a slot)</pre>
             </div>
           </aside>
+
+          <div class="log-slot"></div>
         </div>
 
         <nav class="button-bar">
@@ -183,10 +183,8 @@ DEF   2   SPD 10
               <pre class="inspect-body" data-glitchable>(click a combatant)</pre>
             </div>
           </aside>
-        </div>
 
-        <div class="log-strip">
-          <div class="log-body" data-glitchable></div>
+          <div class="log-slot"></div>
         </div>
 
         <nav class="button-bar">
@@ -199,7 +197,17 @@ DEF   2   SPD 10
         </nav>
       </section>
 
+      </div><!-- /.screen-stage -->
     </main>
+
+    <!-- GLOBAL LOG STRIP — single DOM node; screen.js portals it into the
+         active screen's .log-slot. Parks here (hidden) when no slot exists
+         (e.g. boot screen). -->
+    <div id="log-host" hidden>
+      <div class="log-strip">
+        <div class="log-body" data-glitchable></div>
+      </div>
+    </div>
 
     <!-- NODE MODAL — populated dynamically by ui/nodes.js (or game.js stub fallback) -->
     <div class="modal hidden" id="node-modal">
