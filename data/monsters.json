@@ -59,7 +59,17 @@
          {"type": "applyStatus", "effect": "bleed", "target": "target", "duration": 3}
        ]}
     ],
-    "loot": []
+    "loot": [],
+    "barks": {
+      "onSpawn": {
+        "chance": 0.25,
+        "lines": [
+          "*hisses and bares its teeth",
+          "Tasty manling.",
+          "*spits at your feet"
+        ]
+      }
+    }
   },
   {
     "id": "mon_goblin_warrior",
@@ -81,7 +91,18 @@
       {"name": "power-slashes", "weight": 1, "condition": "self.actionCount % 2 === 1",
        "effects": [{"type": "damage", "target": "target", "amount": "1d4+ATK+2", "damageType": "physical"}]}
     ],
-    "loot": []
+    "loot": [],
+    "barks": {
+      "onSpawn": {
+        "chance": 0.2,
+        "lines": [
+          "*grins, hefting a notched blade",
+          "I'll have your bones for the cookfire.",
+          "*growls",
+          "Squishy."
+        ]
+      }
+    }
   },
   {
     "id": "mon_goblin_shaman",
@@ -103,7 +124,26 @@
       {"name": "snarls a curse at", "weight": 1,
        "effects": [{"type": "applyStatus", "effect": "vulnerable", "target": "target", "duration": 3}]}
     ],
-    "loot": []
+    "loot": [],
+    "barks": {
+      "onSpawn": [
+        "*chants something in the old goblin tongue",
+        "STRONGEST. SHALL. STAND.",
+        "*sketches a sigil in the air"
+      ],
+      "onCast": {
+        "chance": 0.5,
+        "lines": [
+          "*sketches a sigil over its kin",
+          "BIND. BREAK. BIND.",
+          "*chants under its breath"
+        ]
+      },
+      "onDeath": [
+        "*falls without a sound, eyes still open",
+        "...the song... is not... finished..."
+      ]
+    }
   },
   {
     "id": "mon_kobold_striker",
@@ -130,7 +170,17 @@
          {"type": "damage", "target": "target", "amount": "2*(1d4+ATK)", "damageType": "physical"}
        ]}
     ],
-    "loot": []
+    "loot": [],
+    "barks": {
+      "onSpawn": {
+        "chance": 0.25,
+        "lines": [
+          "*chitters and circles low",
+          "Yip.",
+          "*flicks its tail, eyes flat"
+        ]
+      }
+    }
   },
   {
     "id": "mon_bone_walker",
@@ -155,7 +205,14 @@
       {"name": "rakes", "weight": 1,
        "effects": [{"type": "damage", "target": "target", "amount": "1d4+ATK", "damageType": "physical"}]}
     ],
-    "loot": []
+    "loot": [],
+    "barks": {
+      "onDeath": [
+        "*the bones come apart in a clatter",
+        "*the skull rolls, settles, stares at nothing",
+        "*collapses, jaw still working soundlessly"
+      ]
+    }
   },
   {
     "id": "mon_crypt_ghoul",
@@ -177,7 +234,24 @@
       {"name": "feasts on", "weight": 1, "condition": "self.actionCount % 3 === 2",
        "effects": [{"type": "damage", "target": "target", "amount": "5+ATK", "damageType": "physical", "lifesteal": 1.0}]}
     ],
-    "loot": []
+    "loot": [],
+    "barks": {
+      "onSpawn": {
+        "chance": 0.3,
+        "lines": [
+          "*sniffs the air, mouth slack",
+          "*lets out a slow, wet hiss",
+          "*scrapes its teeth together"
+        ]
+      },
+      "onDamaged": {
+        "chance": 0.15,
+        "lines": [
+          "*hisses, mouth working",
+          "*snarls and keeps coming"
+        ]
+      }
+    }
   },
   {
     "id": "mon_acidic_ooze",
@@ -219,6 +293,13 @@
       "onDamaged": [
         {"type": "cleanse", "target": "self", "kind": "debuff",
          "condition": "self.stats.hp < self.stats.maxHp * 0.5 && !self.statuses.some(s => s.def.id === 'enraged')"},
+        {"type": "bark",
+         "lines": [
+           "YOU WILL NOT TAKE IT FROM ME.",
+           "TWICE-KING. TWICE-DAMNED. STILL STANDING.",
+           "*spits blood, paper crown still on his head"
+         ],
+         "condition": "self.stats.hp < self.stats.maxHp * 0.5 && !self.statuses.some(s => s.def.id === 'enraged')"},
         {"type": "applyStatus", "target": "self", "effect": "enraged", "duration": -1,
          "condition": "self.stats.hp < self.stats.maxHp * 0.5 && !self.statuses.some(s => s.def.id === 'enraged')"}
       ]
@@ -227,7 +308,26 @@
       {"name": "lays a heavy blow on", "weight": 1,
        "effects": [{"type": "damage", "target": "target", "amount": "1d6+ATK", "damageType": "physical"}]}
     ],
-    "loot": []
+    "loot": [],
+    "barks": {
+      "onSpawn": [
+        "THE CROWN IS MINE BY RIGHT.",
+        "*hefts a notched axe, paper crown perched lopsided",
+        "ANOTHER ONE. COME. CLOSER."
+      ],
+      "onDamaged": {
+        "chance": 0.2,
+        "lines": [
+          "*spits, laughing",
+          "MORE.",
+          "*the paper crown tilts; he straightens it"
+        ]
+      },
+      "onDeath": [
+        "...kept it... for me...",
+        "*the paper crown slips from his head, half-burned"
+      ]
+    }
   },
   {
     "id": "mon_crimson_wyrm",
@@ -247,6 +347,13 @@
     "hooks": {
       "onDamaged": [
         {"type": "cleanse", "target": "self", "kind": "debuff",
+         "condition": "self.stats.hp < self.stats.maxHp * 0.5 && !self.statuses.some(s => s.def.id === 'enraged')"},
+        {"type": "bark",
+         "lines": [
+           "I AM THE LAST FIRE OF THE OLD WORLD.",
+           "YOU ARE A SPARK. AND I AM HUNGRY.",
+           "*rears back, the cavern groaning with its new weight"
+         ],
          "condition": "self.stats.hp < self.stats.maxHp * 0.5 && !self.statuses.some(s => s.def.id === 'enraged')"},
         {"type": "applyStatus", "target": "self", "effect": "enraged", "duration": -1,
          "condition": "self.stats.hp < self.stats.maxHp * 0.5 && !self.statuses.some(s => s.def.id === 'enraged')"}
@@ -275,7 +382,26 @@
          {"type": "applyStatus", "effect": "burn", "target": "target", "duration": 3}
        ]}
     ],
-    "loot": ["itm_crown_of_eldarmark"]
+    "loot": ["itm_crown_of_eldarmark"],
+    "barks": {
+      "onSpawn": [
+        "*coils tighter on its gold, smoke trickling from its nostrils",
+        "I have slept long. You will not wake another.",
+        "*opens one slow, immense eye"
+      ],
+      "onDamaged": {
+        "chance": 0.15,
+        "lines": [
+          "*bares teeth like swords",
+          "Pinpricks. PINPRICKS.",
+          "*lashes its tail across the gold"
+        ]
+      },
+      "onDeath": [
+        "...the gold... the crown... yours now... heir...",
+        "*sinks into its hoard, the cavern's heat going with it"
+      ]
+    }
   },
   {
     "id": "mon_glyph_wraith",
