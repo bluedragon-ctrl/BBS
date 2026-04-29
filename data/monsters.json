@@ -2,6 +2,7 @@
   {
     "id": "mon_cave_rat",
     "name": "CAVE RAT",
+    "level": 1,
     "stats": {"hp": 8, "maxHp": 8, "mp": 0, "maxMp": 0, "spd": 12, "def": 0, "int": 0, "atk": 2},
     "ascii": [
       "    ___    ",
@@ -20,6 +21,7 @@
   {
     "id": "mon_vile_bat",
     "name": "VILE BAT",
+    "level": 1,
     "stats": {"hp": 6, "maxHp": 6, "mp": 0, "maxMp": 0, "spd": 15, "def": 0, "int": 0, "atk": 2},
     "ascii": [
       "  /\\___/\\  ",
@@ -38,6 +40,7 @@
   {
     "id": "mon_goblin_scout",
     "name": "GOBLIN SCOUT",
+    "level": 1,
     "stats": {"hp": 12, "maxHp": 12, "mp": 0, "maxMp": 0, "spd": 10, "def": 1, "int": 0, "atk": 3},
     "ascii": [
       "    .-.    ",
@@ -61,6 +64,7 @@
   {
     "id": "mon_goblin_warrior",
     "name": "GOBLIN WARRIOR",
+    "level": 1,
     "stats": {"hp": 16, "maxHp": 16, "mp": 0, "maxMp": 0, "spd": 10, "def": 2, "int": 0, "atk": 4},
     "ascii": [
       "    .-.    ",
@@ -82,6 +86,7 @@
   {
     "id": "mon_goblin_shaman",
     "name": "GOBLIN SHAMAN",
+    "level": 1,
     "stats": {"hp": 12, "maxHp": 12, "mp": 0, "maxMp": 0, "spd": 9, "def": 0, "int": 3, "atk": 1},
     "ascii": [
       "   .===.   ",
@@ -103,6 +108,7 @@
   {
     "id": "mon_kobold_striker",
     "name": "KOBOLD STRIKER",
+    "level": 1,
     "stats": {"hp": 14, "maxHp": 14, "mp": 0, "maxMp": 0, "spd": 11, "def": 1, "int": 0, "atk": 3},
     "ascii": [
       "    /\\     ",
@@ -129,6 +135,7 @@
   {
     "id": "mon_bone_walker",
     "name": "BONE WALKER",
+    "level": 1,
     "stats": {"hp": 14, "maxHp": 14, "mp": 0, "maxMp": 0, "spd": 9, "def": 3, "int": 0, "atk": 4},
     "ascii": [
       "    ___    ",
@@ -153,6 +160,7 @@
   {
     "id": "mon_crypt_ghoul",
     "name": "CRYPT GHOUL",
+    "level": 1,
     "stats": {"hp": 18, "maxHp": 18, "mp": 0, "maxMp": 0, "spd": 10, "def": 1, "int": 0, "atk": 4},
     "ascii": [
       "   .---.   ",
@@ -174,6 +182,7 @@
   {
     "id": "mon_acidic_ooze",
     "name": "ACIDIC OOZE",
+    "level": 1,
     "stats": {"hp": 20, "maxHp": 20, "mp": 0, "maxMp": 0, "spd": 7, "def": 0, "int": 0, "atk": 2},
     "ascii": [
       "   _____   ",
@@ -195,6 +204,7 @@
   {
     "id": "mon_goblin_chief",
     "name": "GOBLIN CHIEF",
+    "level": 1,
     "stats": {"hp": 40, "maxHp": 40, "mp": 0, "maxMp": 0, "spd": 10, "def": 3, "int": 0, "atk": 5},
     "ascii": [
       "   .===.   ",
@@ -222,6 +232,7 @@
   {
     "id": "mon_crimson_wyrm",
     "name": "CRIMSON WYRM",
+    "level": 1,
     "stats": {"hp": 80, "maxHp": 80, "mp": 0, "maxMp": 0, "spd": 10, "def": 4, "int": 4, "atk": 7},
     "ascii": [
       "        ___           ",
@@ -269,6 +280,7 @@
   {
     "id": "mon_glyph_wraith",
     "name": "GLYPH WRAITH",
+    "level": 2,
     "stats": {"hp": 18, "maxHp": 18, "mp": 0, "maxMp": 0, "spd": 12, "def": 2, "int": 2, "atk": 3},
     "ascii": [
       "   .---.   ",
@@ -290,6 +302,7 @@
   {
     "id": "mon_watchdog",
     "name": "WATCHDOG",
+    "level": 2,
     "stats": {"hp": 12, "maxHp": 12, "mp": 0, "maxMp": 0, "spd": 14, "def": 1, "int": 4, "atk": 2},
     "ascii": [
       "    ___    ",
@@ -314,6 +327,7 @@
   {
     "id": "mon_regen_daemon",
     "name": "REGEN DAEMON",
+    "level": 2,
     "stats": {"hp": 16, "maxHp": 16, "mp": 0, "maxMp": 0, "spd": 8, "def": 1, "int": 3, "atk": 3},
     "ascii": [
       "   .===.   ",

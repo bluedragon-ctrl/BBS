@@ -34,7 +34,8 @@ export function startNewRun() {
   state.conn = 1.0;
   state.run = {
     seed: state.seed,
-    map: generateMap(state.rng, state.data),
+    level: 1,
+    map: generateMap(state.rng, state.data, 1),
     currentNodeId: null,
     previousNodeId: null,
     visitedIds: [],
@@ -61,6 +62,7 @@ export function continueRun() {
   state.conn = data.conn ?? 1.0;
   state.run = {
     seed: data.seed,
+    level: data.level ?? 1,
     map: deserializeMap(data.map),
     currentNodeId: data.currentNodeId,
     previousNodeId: data.previousNodeId || null,
@@ -78,6 +80,7 @@ export function persistRun() {
   if (!state.run) return;
   saveSlot({
     seed: state.run.seed,
+    level: state.run.level ?? 1,
     map: serializeMap(state.run.map),
     currentNodeId: state.run.currentNodeId,
     previousNodeId: state.run.previousNodeId,
