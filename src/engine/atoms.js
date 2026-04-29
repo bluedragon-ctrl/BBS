@@ -265,6 +265,10 @@ export const fireStatusHooks = fireHooks;
 //     onDamaged: { chance: 0.25, lines: [...] } // explicit
 //   }
 // Strings interpolate via formatSceneString with { self, target, enemies, ... }.
+// Each line is either:
+//   - quoted speech: "I'll have your bones." → MONSTER: "I'll have your bones."
+//   - action (leading `*`): "*grins"          → MONSTER grins.
+// Mix freely inside one `lines` array.
 
 function buildBarkSceneCtx(self, target, ctxBase) {
   const enemies = (ctxBase?.allEnemies || []).map(a => ({ name: a.name }));
@@ -279,12 +283,26 @@ function buildBarkSceneCtx(self, target, ctxBase) {
 
 function emitBark(actor, target, text, ctxBase) {
   if (!actor || !text || !ctxBase?.log) return;
-  const body = formatSceneString(text, buildBarkSceneCtx(actor, target, ctxBase));
+  // Action vs speech: a leading `*` marks an action ("grins"), otherwise the
+  // line is rendered as quoted speech ("I'll have your bones."). Authors mix
+  // both freely inside one `lines` array for variety.
+  const isAction = text.startsWith('*');
+  const raw = isAction ? text.slice(1).trimStart() : text;
+  const body = formatSceneString(raw, buildBarkSceneCtx(actor, target, ctxBase));
   const nameClass = actor.team === 'enemy' ? 'log-enemy' : '';
-  ctxBase.log([
-    { text: `${actor.name}: `, class: nameClass },
-    { text: `"${body}"`, class: 'log-flavor' },
-  ]);
+  if (isAction) {
+    const trimmed = body.trim();
+    const punct = /[.!?]$/.test(trimmed) ? '' : '.';
+    ctxBase.log([
+      { text: `${actor.name} `, class: nameClass },
+      { text: `${trimmed}${punct}`, class: 'log-flavor' },
+    ]);
+  } else {
+    ctxBase.log([
+      { text: `${actor.name}: `, class: nameClass },
+      { text: `"${body}"`, class: 'log-flavor' },
+    ]);
+  }
 }
 
 // Walk monster-passive barks for `slot` and fire one variant if RNG passes.

@@ -5,8 +5,9 @@
     "match": { "type": "combat", "layer": 0 },
     "scene": {
       "room": [
-        "The forest path narrows into shadow. Twisted roots cross the trail and a faint ozone smell lingers — packets, perhaps, leaking from a broken node downstream.",
-        "A rough-hewn track at the wood's edge. The trees lean inward; somewhere ahead, a stream rattles over stones."
+        "The forest path narrows into shadow. Twisted roots cross the trail and the air smells of damp moss and old smoke.",
+        "A rough-hewn track at the wood's edge. The trees lean inward; somewhere ahead, a stream rattles over stones.",
+        "Bracken closes in on either side. Hoofprints, days old, vanish into the dark of the trees."
       ],
       "pre": [
         "A {enemies[0].name} skitters out from beneath the roots and bares its teeth.",
@@ -26,15 +27,16 @@
     "match": { "type": "combat", "layer": 0 },
     "scene": {
       "room": [
-        "A ruined stone archway, half-swallowed by ivy. The keystone bears a glyph that shifts when you don't look directly at it.",
-        "What was a gatehouse is now four crumbling pillars and a wedge of ivy. The wind here smells of old paper."
+        "A ruined stone archway, half-swallowed by ivy. The keystone bears a sigil — a stag and tower — worn nearly smooth.",
+        "What was a gatehouse is now four crumbling pillars and a wedge of ivy. The wind here smells of old paper.",
+        "An arch that once announced a kingdom. The stones still try."
       ],
       "pre": [
         "A {enemies[0].name} hisses from behind the archway and lunges.",
         "Out of the ivy lurches a {enemies[0].name}, eyes flat and bright."
       ],
       "post": [
-        "The archway is quiet again. The glyph on the keystone has stopped shifting.",
+        "The archway is quiet again. A few flakes of mortar drift down.",
         "You stand panting beneath the arch. The ivy stirs, then is still."
       ]
     }
@@ -46,7 +48,8 @@
     "scene": {
       "room": [
         "The trail dips into a sour-smelling marsh. Reeds taller than a man flank the only passable path.",
-        "Black water on both sides of a narrow causeway. Insects spell out little patterns above the surface and disperse."
+        "Black water on both sides of a narrow causeway. Insects cloud the surface and disperse.",
+        "The reeds rattle dryly. Somewhere, frogs go silent at once."
       ],
       "pre": [
         "The reeds part — a {enemies[0].name} bursts toward you in a spray of muck.",
@@ -58,15 +61,21 @@
       ]
     }
   },
+
   {
     "id": "scene_goblin_camp",
     "level": 1,
     "match": { "type": "combat", "layer": 2 },
     "scene": {
-      "room": "Small goblin camp at the edge of a moss-eaten clearing. Embers pop in a stone-ringed firepit; a half-eaten haunch turns slowly on a spit.",
+      "room": [
+        "Small goblin camp at the edge of a moss-eaten clearing. Embers pop in a stone-ringed firepit; a half-eaten haunch turns slowly on a spit.",
+        "A clutch of crude tents, stitched from old kingdom banners. The stag-and-tower is upside down on every one.",
+        "Cookfire smoke and the smell of bad meat. Bones cracked for marrow lie in a careless pile."
+      ],
       "pre": [
         "A bunch of goblins sit calmly around the campfire. They notice you, jump to their feet, and attack.",
-        "Around the fire, a {enemies[0].name} is mid-laugh when it sees you. The laugh turns into a war-cry."
+        "Around the fire, a {enemies[0].name} is mid-laugh when it sees you. The laugh turns into a war-cry.",
+        "A {enemies[0].name} drops the bone it was gnawing and bares its teeth."
       ],
       "post": [
         "All enemies lie sprawled around the dying fire. The spit creaks once, twice, then stops.",
@@ -75,18 +84,274 @@
     }
   },
   {
+    "id": "scene_warrens_cottage",
+    "level": 1,
+    "match": { "type": "combat", "layer": 2 },
+    "scene": {
+      "room": [
+        "A ruined cottage, roof caved in. Goblins have nailed crude shutters over the windows and left an offering of bones at the threshold.",
+        "What was once a farmer's house. The hearth is cold; the walls are scribbled with goblin marks in old soot.",
+        "The cottage door hangs by one hinge. Inside, somebody made a bed of rags on the dead family's table."
+      ],
+      "pre": [
+        "A {enemies[0].name} slams the shutter open, crossbow already swinging.",
+        "From inside the cottage, a {enemies[0].name} screeches and charges.",
+        "The door bangs and a {enemies[0].name} comes through with knife raised."
+      ],
+      "post": [
+        "Quiet returns to the cottage. A wind moves through the broken roof.",
+        "You stand in the dead house among new dead. The hearth is still cold."
+      ]
+    }
+  },
+  {
+    "id": "scene_warrens_palisade",
+    "level": 1,
+    "match": { "type": "combat", "layer": 2 },
+    "scene": {
+      "room": [
+        "A goblin palisade — sharpened stakes lashed across the path. Smoke from a watchfire curls past it.",
+        "The path narrows to a chokepoint between two leaning walls of pointed wood. Drums beat lazily somewhere behind it.",
+        "Stakes, ropes, hides — a fortification thrown up in days and held for years. Bones decorate the gateposts."
+      ],
+      "pre": [
+        "A {enemies[0].name} drops down from the palisade with a ragged howl.",
+        "The drums stop. A {enemies[0].name} kicks open the gate and runs at you.",
+        "From the watchpost a {enemies[0].name} swings out on a rope, blade already moving."
+      ],
+      "post": [
+        "The drums do not start again. You step over the bodies into the silence beyond.",
+        "The gate hangs open. Smoke drifts past you, finally going somewhere."
+      ]
+    }
+  },
+
+  {
+    "id": "scene_crypts_gallery",
+    "level": 1,
+    "match": { "type": "combat", "layer": 3 },
+    "scene": {
+      "room": [
+        "A long gallery lined with stone effigies of dead Eldarmark kings. Each one wears a half-broken crown carved into the stone.",
+        "Royal tombs in two quiet rows. Dust on the floor is undisturbed except where something heavy dragged itself toward the back.",
+        "Carved kings in pairs, hands folded. Some of the hands have been chipped away — recently."
+      ],
+      "pre": [
+        "Stone scrapes on stone — a {enemies[0].name} steps from between two effigies.",
+        "A {enemies[0].name} rises slowly from where it had been kneeling at a king's feet.",
+        "The dust shifts. A {enemies[0].name} resolves out of the gloom between two carved tombs."
+      ],
+      "post": [
+        "The kings stare past you, indifferent. Dust settles on the new dead among their old stones.",
+        "Quiet returns. One effigy's outstretched hand has fallen to the floor; you don't know if it was you."
+      ]
+    }
+  },
+  {
+    "id": "scene_crypts_vault",
+    "level": 1,
+    "match": { "type": "combat", "layer": 3 },
+    "scene": {
+      "room": [
+        "A sunken vault chamber. Water drips from the ceiling and pools around a broken sarcophagus in the center.",
+        "Bones in heaps along the walls. The vault's iron doors stand half-open, prised long ago by something not gentle.",
+        "A flooded crypt-floor reflects torchlight from above. Shapes shift just below the water that aren't fish."
+      ],
+      "pre": [
+        "Water sloshes — a {enemies[0].name} wades out from behind the sarcophagus.",
+        "From the bone-pile, a {enemies[0].name} unfolds itself.",
+        "A {enemies[0].name} rises from the flooded floor, weed-tangled, grinning."
+      ],
+      "post": [
+        "The dripping resumes. Whatever else is down here doesn't move.",
+        "You climb back out of the vault. The iron doors creak closed behind you of their own weight."
+      ]
+    }
+  },
+  {
+    "id": "scene_crypts_workshop",
+    "level": 1,
+    "match": { "type": "combat", "layer": 3 },
+    "scene": {
+      "room": [
+        "A vaulted chamber lined with stained tables and shattered glass. An old alchemist's workshop, abandoned mid-experiment.",
+        "Broken vials underfoot crunch into greenish powder. Something acrid still clings to the air after centuries.",
+        "Long tables, low stools, jars stacked to the ceiling — most cracked, some still leaking slow, dark fluids."
+      ],
+      "pre": [
+        "A {enemies[0].name} oozes between the table legs toward you.",
+        "Glass crunches — a {enemies[0].name} shoulders out of an upturned alembic.",
+        "From a shadowed corner, a {enemies[0].name} steps forward, dragging old chains."
+      ],
+      "post": [
+        "The acrid air seems to thin. The jars stop their slow drip for a moment, then resume.",
+        "You leave the workshop. Centuries of unfinished work go on without you."
+      ]
+    }
+  },
+
+  {
+    "id": "scene_chief_court",
+    "level": 1,
+    "match": { "type": "elite", "layer": 3 },
+    "scene": {
+      "room": [
+        "The largest crypt-chamber of the kingdom. The Goblin Chief has made it his court — a stolen throne of broken stone, bones piled like trophies.",
+        "A vaulted hall lined with smashed effigies. At its end, a heap of skulls forms a crude dais. The chief sits there, paper crown perched lopsided.",
+        "What was once a great royal hall. The dead kings' tombs have been broken open and used for furniture."
+      ],
+      "pre": [
+        "The Goblin Chief stands, raises his axe, and bellows at you across the hall.",
+        "{enemies[0].name} grins and steps off the dais. The stones around him cease their shifting and watch.",
+        "{enemies[0].name} lifts the paper crown, sets it square, and raises a notched axe in both hands."
+      ],
+      "post": [
+        "The paper crown lies in ash. The throne of broken stone is empty again.",
+        "Silence in the hall. You stand among bone-piles that no longer mean anything."
+      ]
+    }
+  },
+
+  {
+    "id": "scene_dragon_lair",
+    "level": 1,
+    "match": { "type": "boss" },
+    "scene": {
+      "room": [
+        "The Hoard. Gold piled to the cavern's roof — coins, plates, twisted royal regalia. Half-buried in the heap, dull beside the gold, the Crown of Eldarmark.",
+        "Heat rolls off the cavern walls. Bones of dead heroes and dead beasts mingle in the gold like sediment.",
+        "The dragon's lair. Treasure ankle-deep, then knee-deep, then to the chest. The crown is in there somewhere."
+      ],
+      "pre": [
+        "{enemies[0].name} uncoils on its hoard, smoke trickling from its nostrils as it sees you.",
+        "{enemies[0].name} opens one slow, immense eye. The cavern goes very still.",
+        "The mountain of gold shifts. {enemies[0].name} lifts its head, deliberate, and looks at you."
+      ],
+      "post": [
+        "{enemies[0].name} falls. Gold cascades from its body like a slow tide. Half-buried, the crown is waiting.",
+        "The cavern is silent except for the slow chime of cooling coins. The crown gleams dully in the heap, unburied at last."
+      ]
+    }
+  },
+
+  {
+    "id": "scene_borderwood_shrine",
+    "level": 1,
+    "match": { "type": "shrine", "layer": 1 },
+    "scene": {
+      "room": [
+        "A wayside altar at a fork in the path. The stag-and-tower of Eldarmark is carved deep enough to outlast even goblins.",
+        "Stones laid in a small ring. Old offerings — a child's beads, a soldier's button — still in the cracks."
+      ]
+    }
+  },
+  {
+    "id": "scene_warrens_shrine",
+    "level": 1,
+    "match": { "type": "shrine", "layer": 2 },
+    "scene": {
+      "room": [
+        "A roadside altar of the old kingdom, half-toppled. The goblins have used it for butchering; the stone is dark with old blood, but the sigil holds.",
+        "An altar that has not been honoured in a long time. Someone has scratched goblin marks across the royal sigil — and someone else has scrubbed them out."
+      ]
+    }
+  },
+  {
+    "id": "scene_crypts_shrine",
+    "level": 1,
+    "match": { "type": "shrine", "layer": 3 },
+    "scene": {
+      "room": [
+        "A small chapel set into the crypt wall. The dead kings' faces are kept here in painted wood, candles long out.",
+        "An old shrine kept warm by no one for a very long time. The sigil here is gilded and the gilt has not flaked."
+      ]
+    }
+  },
+
+  {
+    "id": "scene_borderwood_cache",
+    "level": 1,
+    "match": { "type": "cache", "layer": 1 },
+    "scene": {
+      "room": [
+        "A forester's cache, dug into the roots of a great oak. Whoever stocked it didn't come back.",
+        "An iron-banded box hidden under wet leaves. The lock is rusted through; the contents are not."
+      ]
+    }
+  },
+  {
+    "id": "scene_warrens_cache",
+    "level": 1,
+    "match": { "type": "cache", "layer": 2 },
+    "scene": {
+      "room": [
+        "A pile of stolen goods stashed beneath the floorboards of a goblin shack. The looters are not here.",
+        "Sacks tied at the neck, kicked under a cot. Whatever the goblins took from the kingdom, some of it is here."
+      ]
+    }
+  },
+  {
+    "id": "scene_crypts_cache",
+    "level": 1,
+    "match": { "type": "cache", "layer": 3 },
+    "scene": {
+      "room": [
+        "A side-vault, unsealed. Whatever was buried here has been picked through, but not entirely.",
+        "An offering chamber. The grave-goods of a minor noble lie scattered; some still have their gilt."
+      ]
+    }
+  },
+
+  {
+    "id": "scene_borderwood_shop",
+    "level": 1,
+    "match": { "type": "shop", "layer": 1 },
+    "scene": {
+      "room": [
+        "A wayside hermit's wagon, shutters propped open into a counter. He nods at you and gestures at his wares.",
+        "An old man at a campfire by the road. He has set out a row of vials and small charms on a folded cloth."
+      ]
+    }
+  },
+  {
+    "id": "scene_warrens_shop",
+    "level": 1,
+    "match": { "type": "shop", "layer": 2 },
+    "scene": {
+      "room": [
+        "A roadwarden's pony-cart, parked between two trees that lean conspiratorially. He doesn't smile, but he's open for business.",
+        "A trader at a small clearing, dagger across his knees. He raises a hand to you — half greeting, half warning."
+      ]
+    }
+  },
+  {
+    "id": "scene_crypts_shop",
+    "level": 1,
+    "match": { "type": "shop", "layer": 3 },
+    "scene": {
+      "room": [
+        "A wandering scholar has set up at a tomb-niche, table laid with charms and inks. He looks more frightened of his own customers than of the crypts.",
+        "An academic gone too deep, surrounded by his own salvage. He'd rather sell some of it than carry it back."
+      ]
+    }
+  },
+
+  {
     "id": "scene_default_combat",
     "level": 1,
     "match": { "type": "combat" },
     "scene": {
-      "room": "A pocket of hostile traffic. Stale air, the green light of error logs.",
+      "room": [
+        "A clearing in the trees. The light is wrong; the leaves don't move quite right.",
+        "An overgrown path between two listing oaks. Something has been here recently."
+      ],
       "pre": [
-        "Hostile processes lock onto your handle.",
-        "A {enemies[0].name} snaps into focus and lunges."
+        "A {enemies[0].name} steps into your way and shows its teeth.",
+        "From the brush, a {enemies[0].name} resolves and charges."
       ],
       "post": [
-        "Silence. The hostile traffic dissipates.",
-        "The room is yours. The error logs go quiet."
+        "Quiet returns. You wipe your blade and walk on.",
+        "The clearing empties around you. The leaves go back to almost-still."
       ]
     }
   },
@@ -95,9 +360,9 @@
     "level": 1,
     "match": { "type": "elite" },
     "scene": {
-      "room": "Heavy traffic congeals here. The walls of the node are slick with packet residue.",
+      "room": "A wider chamber. Heavier footprints in the dust. Whatever's ahead is bigger than the rest.",
       "pre": "Something larger than the rest stirs at the back of the room and turns to face you.",
-      "post": "The hostile process collapses into noise. The room exhales."
+      "post": "The big one falls. The room exhales."
     }
   },
   {
@@ -105,9 +370,9 @@
     "level": 1,
     "match": { "type": "boss" },
     "scene": {
-      "room": "The SYSOP's chamber. Every surface is a screen, every screen shows you.",
-      "pre": "The SYSOP turns, very slowly, and acknowledges your handle for the first time.",
-      "post": "The SYSOP's avatar dissolves. The screens go to snow."
+      "room": "A cavern at the heart of the old kingdom. The walls are warm.",
+      "pre": "Something old and immense lifts its head and looks at you.",
+      "post": "The thing falls. The walls cool slowly."
     }
   },
   {
@@ -116,8 +381,8 @@
     "match": { "type": "shrine" },
     "scene": {
       "room": [
-        "A pocket of static calm — a quiet glade where the BBS hum drops to a whisper.",
-        "A small clearing where the connection feels almost clean. Something old has been kept here."
+        "A pocket of quiet. An old altar, the carving worn down to a suggestion.",
+        "A small clearing. Something has been kept holy here a long time."
       ]
     }
   },
@@ -126,7 +391,7 @@
     "level": 1,
     "match": { "type": "cache" },
     "scene": {
-      "room": "An archive node. Directories nest into directories; some are intact, most are not."
+      "room": "A hidden stash. Old goods left for someone who never came back."
     }
   },
   {
@@ -134,7 +399,7 @@
     "level": 1,
     "match": { "type": "shop" },
     "scene": {
-      "room": "A small storefront in the network — a flickering ANSI sign reads WARES, all caps."
+      "room": "A small wayside trader. A row of wares set out on cloth, a watchful set of eyes behind it."
     }
   },
   {
@@ -142,7 +407,7 @@
     "level": 1,
     "match": { "type": "event" },
     "scene": {
-      "room": "Something irregular hums in this node. The packets here travel sideways."
+      "room": "The path turns strange here. Something asks to be noticed."
     }
   }
 ]
