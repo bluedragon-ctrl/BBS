@@ -51,6 +51,45 @@
       { "type": "cleanse", "target": "self", "kind": "debuff" }
     ]
   },
+  {
+    "id": "itm_greater_potion",
+    "kind": "consumable",
+    "level": 1,
+    "tier": 2,
+    "name": "GREATER POTION",
+    "cost": 3,
+    "blurb": "A heavier vial of healing draught. Sweet and a little metallic.",
+    "targeting": "self",
+    "effects": [
+      { "type": "heal", "target": "self", "amount": "1d6+10" }
+    ]
+  },
+  {
+    "id": "itm_smoke_bomb",
+    "kind": "consumable",
+    "level": 1,
+    "tier": 1,
+    "name": "SMOKE BOMB",
+    "cost": 2,
+    "blurb": "A waxed paper bulb. Bursts into grey murk on impact.",
+    "targeting": "self",
+    "effects": [
+      { "type": "applyStatus", "effect": "phase", "target": "self", "duration": 2 }
+    ]
+  },
+  {
+    "id": "itm_antitoxin",
+    "kind": "consumable",
+    "level": 1,
+    "tier": 1,
+    "name": "ANTITOXIN",
+    "cost": 2,
+    "blurb": "Bitter green liquid. Burns going down. Burns the rot worse.",
+    "targeting": "self",
+    "effects": [
+      { "type": "cleanse", "target": "self", "kind": "debuff" }
+    ]
+  },
 
   {
     "id": "itm_rusted_dagger",
@@ -140,5 +179,114 @@
     "cost": 2,
     "blurb": "Cheap bronze sigil — sharpens your strike.",
     "modifiers": [{ "stat": "atk", "add": 1 }]
+  },
+
+  {
+    "id": "itm_iron_sword",
+    "kind": "wearable",
+    "level": 1,
+    "slot": "weapon",
+    "tier": 2,
+    "name": "IRON SWORD",
+    "cost": 3,
+    "blurb": "Plain forged steel. Heavy. Honest.",
+    "modifiers": [{ "stat": "atk", "add": 2 }]
+  },
+  {
+    "id": "itm_apprentice_staff",
+    "kind": "wearable",
+    "level": 1,
+    "slot": "weapon",
+    "tier": 1,
+    "name": "APPRENTICE STAFF",
+    "cost": 2,
+    "blurb": "A plain ash staff. Smells faintly of incense smoke.",
+    "modifiers": [
+      { "stat": "atk", "add": 1 },
+      { "stat": "int", "add": 1 }
+    ]
+  },
+  {
+    "id": "itm_oaken_staff",
+    "kind": "wearable",
+    "level": 1,
+    "slot": "weapon",
+    "tier": 2,
+    "name": "OAKEN STAFF",
+    "cost": 3,
+    "blurb": "Old oak, bound in copper rings. Hums when you concentrate.",
+    "modifiers": [{ "stat": "int", "add": 2 }]
+  },
+  {
+    "id": "itm_scholar_robe",
+    "kind": "wearable",
+    "level": 1,
+    "slot": "robe",
+    "tier": 2,
+    "name": "SCHOLAR'S ROBE",
+    "cost": 3,
+    "blurb": "Heavy wool, ink-stained at the cuffs. Pockets stitched for scrolls.",
+    "modifiers": [
+      { "stat": "def", "add": 1 },
+      { "stat": "maxMp", "add": 2 }
+    ]
+  },
+  {
+    "id": "itm_jade_amulet",
+    "kind": "wearable",
+    "level": 1,
+    "slot": "amulet",
+    "tier": 1,
+    "name": "JADE AMULET",
+    "cost": 2,
+    "blurb": "A polished green disc on a leather thong. Cool against the skin.",
+    "modifiers": [{ "stat": "int", "add": 1 }]
+  },
+  {
+    "id": "itm_ankh_amulet",
+    "kind": "wearable",
+    "level": 1,
+    "slot": "amulet",
+    "tier": 2,
+    "name": "ANKH AMULET",
+    "cost": 3,
+    "blurb": "Looped bronze, worn smooth. The metal feels warm even in cold.",
+    "modifiers": [
+      { "stat": "maxHp", "add": 5 },
+      { "stat": "def", "add": 1 }
+    ]
+  },
+  {
+    "id": "itm_brass_ring",
+    "kind": "wearable",
+    "level": 1,
+    "slot": "ring",
+    "tier": 1,
+    "name": "BRASS RING",
+    "cost": 2,
+    "blurb": "Plain brass band. Tarnished, but heavy on the hand.",
+    "modifiers": [{ "stat": "atk", "add": 1 }]
+  },
+  {
+    "id": "itm_silver_ring",
+    "kind": "wearable",
+    "level": 1,
+    "slot": "ring",
+    "tier": 1,
+    "name": "SILVER RING",
+    "cost": 2,
+    "blurb": "A simple silver band. Cool, slightly tarnished.",
+    "modifiers": [{ "stat": "def", "add": 1 }]
+  },
+  {
+    "id": "itm_sapphire_ring",
+    "kind": "wearable",
+    "level": 1,
+    "slot": "ring",
+    "tier": 2,
+    "name": "SAPPHIRE RING",
+    "cost": 3,
+    "blurb": "A small blue stone in a plain silver setting. Cold to the touch.",
+    "modifiers": [{ "stat": "maxMp", "add": 2 }]
   }
 ]
