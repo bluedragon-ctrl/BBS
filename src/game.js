@@ -1,7 +1,7 @@
 // NETROMANCER.BBS — main entry. Wires modules and starts the boot sequence.
 
 import { loadData } from './engine/data.js';
-import { makeContext, executeAtoms, setDataRef } from './engine/atoms.js';
+import { makeContext, executeAtoms, setDataRef, fireBarks } from './engine/atoms.js';
 import { evalExpr } from './engine/expr.js';
 import { makeRng, randomSeed } from './engine/rng.js';
 import {
@@ -304,6 +304,7 @@ window.netro = {
   showTerminalSequence,
   openCodex,
   wipeCodex,
+  fireBarks,
 };
 
 wireButtons();
