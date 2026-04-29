@@ -173,11 +173,13 @@ export async function showCache(node) {
   const flavorCount = 3 + Math.floor(rng() * 4);     // 3-6
 
   // Build candidate pools: spells/wearables not yet found this run, plus tokens fallback.
+  const level = run.level ?? 1;
   const knownSpells = new Set(player.loadout.spells);
-  const candidateSpells = deps.data.list('spells').filter(s => !knownSpells.has(s.id));
+  const candidateSpells = deps.data.list('spells')
+    .filter(s => (s.level ?? 1) === level && !knownSpells.has(s.id));
   const ownedWearables = new Set(player.loadout.wearables || []);
   const candidateWearables = (deps.data.list('items') || [])
-    .filter(it => it.kind === 'wearable' && !ownedWearables.has(it.id));
+    .filter(it => it.kind === 'wearable' && (it.level ?? 1) === level && !ownedWearables.has(it.id));
 
   function rollDrop() {
     // Pool selection: 60% spell if any unknown, 30% wearable if any new, else tokens.
@@ -343,7 +345,8 @@ function redraw(bodyEl, intro, rows) {
 // ====================================================================
 
 export async function showEvent(node) {
-  const events = deps.data.list('events') || [];
+  const level = deps.getRun().level ?? 1;
+  const events = (deps.data.list('events') || []).filter(e => (e.level ?? 1) === level);
   if (!events.length) {
     deps.log('> No events authored.');
     return;
@@ -375,9 +378,11 @@ export async function showEvent(node) {
 
 export async function showShop(node) {
   const run = deps.getRun();
+  const level = run.level ?? 1;
   const owned = new Set(run.player.loadout?.wearables || []);
   // Pool: all consumables + wearables not already owned this run.
   const allItems = (deps.data.list('items') || []).filter(it => {
+    if ((it.level ?? 1) !== level) return false;
     if (it.kind === 'consumable') return true;
     if (it.kind === 'wearable')   return !owned.has(it.id);
     return false;

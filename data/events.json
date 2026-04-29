@@ -1,6 +1,7 @@
 [
   {
     "id": "evt_corrupted_terminal",
+    "level": 2,
     "title": "CORRUPTED TERMINAL",
     "description": "Half-decoded process logs hover on the screen. You could try to decompile them — at a cost.",
     "choices": [
@@ -27,6 +28,7 @@
   },
   {
     "id": "evt_backdoor",
+    "level": 2,
     "title": "BACKDOOR",
     "description": "An unauthorised port hangs open. Could be a trap, could be a shortcut.",
     "choices": [
@@ -55,6 +57,7 @@
   },
   {
     "id": "evt_ghost_user",
+    "level": 2,
     "title": "GHOST USER",
     "description": "Another summoner's stale session bleeds through. They left mana behind.",
     "choices": [

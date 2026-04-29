@@ -46,10 +46,12 @@ const LAYER_WEIGHTS = [
   /* layer 5 */ { combat: 2, elite: 2, shop: 1, shrine: 1 },
 ];
 
-export function generateMap(rng, data = null) {
+export function generateMap(rng, data = null, level = 1) {
   const nodes = new Map();
   const layers = [];
-  const sceneTemplates = data ? data.list('nodes').filter(t => t.scene) : [];
+  const sceneTemplates = data
+    ? data.list('nodes').filter(t => t.scene && (t.level ?? 1) === level)
+    : [];
 
   for (let li = 0; li < LAYERS; li++) {
     const count = NODES_PER_LAYER[li];
