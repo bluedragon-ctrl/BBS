@@ -19,6 +19,7 @@ import { logMessage } from './log.js';
 import { formatTokens } from './ui/util.js';
 import { wipeCodex } from './engine/codex.js';
 import { wipeFlags } from './engine/flags.js';
+import { wipeUnlocks, bankLoadout } from './engine/unlocks.js';
 
 let state = null;
 let setConn = () => {};
@@ -119,6 +120,7 @@ export function wipeAllData() {
   wipeSave();
   wipeCodex();
   wipeFlags();
+  wipeUnlocks();
   state.run = null;
   state.conn = 1.0;
   setConn(1.0);
@@ -163,10 +165,12 @@ export async function resolveNode(node, opts = {}) {
         renderMap();
         return;
       }
-      // Victory — clear combat statuses, grant token reward, resolve loot drops.
+      // Victory — clear combat statuses, grant token reward, resolve loot drops,
+      // bank persistent unlocks for everything currently in the player's kit.
       state.run.player.statuses = [];
       grantCombatTokens(node.type);
       grantCombatLoot(result.finalCombat);
+      bankLoadout(state.run.player.loadout);
     } else if (node.type === 'shell') {
       await showShell(node);
     } else if (node.type === 'shrine') {
