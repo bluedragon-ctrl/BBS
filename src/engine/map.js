@@ -52,7 +52,7 @@ const NODES_PER_LAYER = [1, 3, 3, 4, 3, 2, 1];
 const LAYER_WEIGHTS_L1 = [
   /* layer 1 */ { combat: 4, event: 1 },
   /* layer 2 */ { combat: 3, event: 1, shop: 1 },
-  /* layer 3 */ { combat: 3, shop: 2, shrine: 1, elite: 1, event: 1 },
+  /* layer 3 */ { combat: 3, shop: 2, shrine: 1, event: 1 },
   /* layer 4 */ { combat: 2, shop: 2, shrine: 1, elite: 1, event: 1 },
   /* layer 5 */ { combat: 2, elite: 2, shop: 1, shrine: 1 },
 ];
@@ -221,12 +221,10 @@ const COMBAT_RECIPES = {
   ],
 };
 
-// Per-layer elite recipes. Goblin Chief is Act 1's only authored elite; reused
-// across L3-L5 to cover any layer where the weights table allows elites.
+// Per-layer elite recipes. Goblin Chief is Act 1's only authored elite. He
+// appears at L4 and L5 only — L3 stays normal Crypts content so the player
+// gets one more layer of buildup before the mini-boss encounter.
 const ELITE_RECIPES = {
-  3: [
-    ['mon_goblin_chief'],
-  ],
   4: [
     ['mon_goblin_chief'],
   ],
