@@ -200,24 +200,24 @@ const COMBAT_RECIPES = {
     ['mon_goblin_warrior', 'mon_goblin_scout'],
     ['mon_goblin_shaman', 'mon_goblin_scout', 'mon_goblin_scout'],
     ['mon_kobold_striker', 'mon_goblin_warrior'],
-    ['mon_kobold_striker', 'mon_kobold_striker', 'mon_kobold_striker'],
+    ['mon_kobold_striker', 'mon_kobold_striker', 'mon_goblin_scout'],
   ],
   3: [
     ['mon_bone_walker', 'mon_crypt_ghoul'],
-    ['mon_bone_walker', 'mon_bone_walker', 'mon_goblin_scout'],
+    ['mon_bone_walker', 'mon_goblin_scout', 'mon_goblin_scout'],
     ['mon_acidic_ooze', 'mon_crypt_ghoul'],
-    ['mon_acidic_ooze', 'mon_bone_walker', 'mon_bone_walker'],
+    ['mon_acidic_ooze', 'mon_bone_walker', 'mon_goblin_scout'],
   ],
   4: [
     ['mon_bone_walker', 'mon_crypt_ghoul'],
     ['mon_acidic_ooze', 'mon_crypt_ghoul'],
-    ['mon_acidic_ooze', 'mon_bone_walker', 'mon_bone_walker'],
+    ['mon_acidic_ooze', 'mon_bone_walker', 'mon_crypt_ghoul'],
     ['mon_crypt_ghoul', 'mon_crypt_ghoul'],
   ],
   5: [
     ['mon_bone_walker', 'mon_crypt_ghoul', 'mon_crypt_ghoul'],
     ['mon_acidic_ooze', 'mon_acidic_ooze'],
-    ['mon_bone_walker', 'mon_bone_walker', 'mon_acidic_ooze'],
+    ['mon_bone_walker', 'mon_acidic_ooze', 'mon_crypt_ghoul'],
   ],
 };
 
