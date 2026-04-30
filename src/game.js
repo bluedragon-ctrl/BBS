@@ -13,6 +13,7 @@ import { showTerminalSequence } from './ui/terminal.js';
 import { initCodexUi, openCodex } from './ui/codex.js';
 import { initInventoryUi, openInventory } from './ui/inventory.js';
 import { loadCodex, wipeCodex } from './engine/codex.js';
+import { loadUnlocks, wipeUnlocks, getUnlocked } from './engine/unlocks.js';
 import { initNodeUi } from './ui/nodes.js';
 import {
   applyConnTier,
@@ -237,6 +238,7 @@ state.rng = makeRng(state.seed);
 state.data = await loadData();
 setDataRef(state.data);
 loadCodex();
+loadUnlocks();
 
 initLog({ getConn: () => state.conn });
 initRun({ state, setConn });
@@ -322,6 +324,8 @@ window.netro = {
   showTerminalSequence,
   openCodex,
   wipeCodex,
+  wipeUnlocks,
+  getUnlocked,
   wipeAll: wipeAllData,
   fireBarks,
   // Devtools: flip the intro-banner unlock without needing the (yet-unimplemented)

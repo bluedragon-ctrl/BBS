@@ -5,6 +5,7 @@ import { makeContext, executeAtoms } from '../engine/atoms.js';
 import { weightedPick, pick } from '../engine/rng.js';
 import { evalExpr } from '../engine/expr.js';
 import { markKnown } from '../engine/codex.js';
+import { isUnlocked } from '../engine/unlocks.js';
 import { addWearable } from '../engine/loadout.js';
 import { showTerminalSequence } from './terminal.js';
 import { sleep, escapeHtml, formatTokens, countBy, pickByKey, closeModal } from './util.js';
@@ -216,10 +217,10 @@ export async function showCache(node) {
   const level = run.level ?? 1;
   const knownSpells = new Set(player.loadout.spells);
   const candidateSpells = deps.data.list('spells')
-    .filter(s => (s.level ?? 1) === level && !knownSpells.has(s.id));
+    .filter(s => (s.level ?? 1) === level && !knownSpells.has(s.id) && !isUnlocked('spells', s.id));
   const ownedWearables = new Set(player.loadout.wearables || []);
   const candidateWearables = (deps.data.list('items') || [])
-    .filter(it => it.kind === 'wearable' && (it.level ?? 1) === level && !it.noShop && !ownedWearables.has(it.id));
+    .filter(it => it.kind === 'wearable' && (it.level ?? 1) === level && !it.noShop && !ownedWearables.has(it.id) && !isUnlocked('wearables', it.id));
 
   function rollDrop() {
     // Pool selection: 60% spell if any unknown, 30% wearable if any new, else tokens.
@@ -446,7 +447,7 @@ export async function showShop(node) {
     if ((it.level ?? 1) !== level) return false;
     if (it.noShop) return false;
     if (it.kind === 'consumable') return true;
-    if (it.kind === 'wearable')   return !owned.has(it.id);
+    if (it.kind === 'wearable')   return !owned.has(it.id) && !isUnlocked('wearables', it.id);
     return false;
   });
   if (!allItems.length) {
