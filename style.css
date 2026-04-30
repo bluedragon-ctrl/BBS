@@ -258,20 +258,50 @@ pre {
 }
 #boot-menu.hidden { display: none; }
 
-.title-art {
+/* Boot banner — used for the static CRIMSON WYRM pre-unlock and the animated
+   reveal post-unlock. Per-cell <span>s are forced to 1ch boxes so subpixel
+   rounding can't drift across long ANSI Shadow rows. */
+.banner {
   margin: 0 0 1lh 0;
-  color: var(--fg);
-  font-size: 1em;
+  font-size: 14px;
   line-height: 1;
+  letter-spacing: 0;
+  white-space: pre;
+  color: var(--fg);
+}
+.banner span {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+  vertical-align: top;
+}
+
+.banner.red {
+  color: var(--enemy);
   text-shadow:
-    0 0 4px var(--fg),
-    0 0 12px var(--fg),
-    0 0 24px rgba(0, 255, 159, 0.5);
+    0 0 2px var(--enemy),
+    0 0 8px rgba(255, 77, 109, 0.4);
+}
+.banner.magenta {
+  color: var(--accent);
+  text-shadow:
+    0 0 2px var(--accent),
+    0 0 8px rgba(255, 0, 255, 0.45);
   animation: title-pulse 3.2s ease-in-out infinite;
 }
+.banner span.churn  { color: var(--accent); opacity: 0.85; }
+/* Locked cells own their hue + glow so the wave reveals magenta NETROMANCER
+   directly — no red flash before the parent class flips. */
+.banner span.locked {
+  color: var(--accent);
+  text-shadow:
+    0 0 2px var(--accent),
+    0 0 8px rgba(255, 0, 255, 0.45);
+}
+
 @keyframes title-pulse {
   0%, 100% { filter: brightness(1); }
-  50%      { filter: brightness(1.25); }
+  50%      { filter: brightness(1.1); }
 }
 
 .tagline {

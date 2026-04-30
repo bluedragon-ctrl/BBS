@@ -27,14 +27,10 @@ import {
   persistRun, refreshContinueButton, wipeAllData,
 } from './run.js';
 import { hasSave } from './engine/save.js';
-
-const TITLE_ART = String.raw`
- _   _ _____ _____ ____   ___  __  __    _    _   _  ____ _____ ____
-| \ | | ____|_   _|  _ \ / _ \|  \/  |  / \  | \ | |/ ___| ____|  _ \
-|  \| |  _|   | | | |_) | | | | |\/| | / _ \ |  \| | |   |  _| | |_) |
-| |\  | |___  | | |  _ <| |_| | |  | |/ ___ \| |\  | |___| |___|  _ <
-|_| \_|_____| |_| |_| \_\\___/|_|  |_/_/   \_\_| \_|\____|_____|_| \_\
-`;
+import {
+  CRIMSON_WYRM_ART, NETROMANCER_ART, playIntroBanner, renderStaticBanner,
+} from './ui/intro-banner.js';
+import { loadFlags, getFlag, setFlag } from './engine/flags.js';
 
 const BOOT_LINES = [
   '> ATDT 555-0CCULT',
@@ -85,8 +81,18 @@ async function runBootSequence() {
   const titleEl = document.getElementById('title-art');
 
   if (log) log.style.display = 'none';
-  titleEl.textContent = TITLE_ART;
-  menu.classList.remove('hidden');
+
+  loadFlags();
+  if (!getFlag('netromancerRevealed')) {
+    renderStaticBanner(titleEl, CRIMSON_WYRM_ART, 'red');
+    menu.classList.remove('hidden');
+  } else {
+    const playCount = getFlag('introPlayCount') || 0;
+    const mode = playCount === 0 ? 'full' : 'fast';
+    setFlag('introPlayCount', playCount + 1);
+    await playIntroBanner({ container: titleEl, mode });
+    menu.classList.remove('hidden');
+  }
 
   await showTerminalSequence(BOOT_LINES, {
     frame: true,
@@ -318,6 +324,18 @@ window.netro = {
   wipeCodex,
   wipeAll: wipeAllData,
   fireBarks,
+  // Devtools: flip the intro-banner unlock without needing the (yet-unimplemented)
+  // crown amulet. Reload after calling to see the reveal animation.
+  unlockNetromancer() {
+    setFlag('netromancerRevealed', true);
+    setFlag('introPlayCount', 0);
+    console.log('netromancer unlocked — reload to see the intro');
+  },
+  lockNetromancer() {
+    setFlag('netromancerRevealed', false);
+    setFlag('introPlayCount', 0);
+    console.log('netromancer re-locked — reload to see the static CRIMSON WYRM banner');
+  },
 };
 
 wireButtons();
