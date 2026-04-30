@@ -5,6 +5,7 @@
 import { weightedPick } from './rng.js';
 
 export const NODE_GLYPH = {
+  shell:   '[>]',
   combat:  '[C]',
   shop:    '[$]',
   cache:   '[D]',
@@ -15,6 +16,7 @@ export const NODE_GLYPH = {
 };
 
 export const NODE_LABEL = {
+  shell:   'SHELL PROMPT',
   combat:  'COMBAT NODE',
   shop:    'SHOP',
   cache:   'CACHE',
@@ -25,6 +27,7 @@ export const NODE_LABEL = {
 };
 
 export const NODE_FLAVOR = {
+  shell:   'The shell prompt. Adventure awaits.',
   combat:  'A hostile process. Resolve by combat.',
   shop:    'A node selling odd files. Spend tokens.',
   cache:   'A directory of dropped files — most encrypted, some readable.',
@@ -59,7 +62,7 @@ export function generateMap(rng, data = null, level = 1) {
     for (let ci = 0; ci < count; ci++) {
       const id = `n_${li}_${ci}`;
       let type;
-      if (li === 0)               type = 'combat';
+      if (li === 0)               type = 'shell';
       else if (li === LAYERS - 1) type = 'boss';
       else                        type = pickType(rng, LAYER_WEIGHTS[li - 1]);
       const node = {

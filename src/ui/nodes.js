@@ -7,7 +7,7 @@ import { evalExpr } from '../engine/expr.js';
 import { markKnown } from '../engine/codex.js';
 import { addWearable } from '../engine/loadout.js';
 import { showTerminalSequence } from './terminal.js';
-import { sleep, escapeHtml, formatTokens, countBy } from './util.js';
+import { sleep, escapeHtml, formatTokens, countBy, pickByKey, closeModal } from './util.js';
 
 let deps = null;
 // deps = {
@@ -70,30 +70,48 @@ export function showNodeModal({ title, flavor, choices, onPick }) {
     setFocus(focusIdx);
 
     let resolved = false;
-    function choose(i) {
+    function choose(i, dismissKey) {
       if (resolved) return;
       if (choices[i]?.disabled) return;
       resolved = true;
       cleanup();
-      m.classList.add('hidden');
+      closeModal(m, { dismissKey });
       Promise.resolve(onPick ? onPick(i) : null).then(() => resolve(i));
     }
 
+    function dismiss(e, idx) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      choose(idx, e.key);
+    }
+
     function keyHandler(e) {
+      // Navigation keys: don't stop propagation — bubble-phase listeners
+      // (e.g. inventory's slot-modal preview) need to see the post-update DOM.
       if (e.key === 'ArrowDown' || e.key === 'j') { e.preventDefault(); moveFocus(1); return; }
       if (e.key === 'ArrowUp'   || e.key === 'k') { e.preventDefault(); moveFocus(-1); return; }
-      if (e.key === 'Enter' || e.key === ' ')    { e.preventDefault(); choose(focusIdx); return; }
-      const c = choices.find(c => c.key.toLowerCase() === e.key.toLowerCase());
-      if (c && !c.disabled) { e.preventDefault(); choose(choices.indexOf(c)); return; }
+      // Dismissal keys: stop the event so the screen behind can't see it.
+      if (e.key === 'Enter' || e.key === ' ')    { dismiss(e, focusIdx); return; }
+      const idx = pickByKey(choices, e.key);
+      if (idx >= 0) { dismiss(e, idx); return; }
       if (e.key === 'Escape') {
         const leave = choices.findIndex(c => c.isLeave);
-        if (leave >= 0) { e.preventDefault(); choose(leave); }
+        if (leave >= 0) { dismiss(e, leave); }
       }
     }
-    function cleanup() {
-      window.removeEventListener('keydown', keyHandler);
+    function backdropClick(e) {
+      if (e.target !== m) return; // only true backdrop, not the inner frame
+      const leave = choices.findIndex(c => c.isLeave);
+      if (leave < 0) return;      // forced-choice modals (events) ignore backdrop
+      e.preventDefault();
+      choose(leave);
     }
-    window.addEventListener('keydown', keyHandler);
+    function cleanup() {
+      window.removeEventListener('keydown', keyHandler, true);
+      m.removeEventListener('click', backdropClick);
+    }
+    window.addEventListener('keydown', keyHandler, true);
+    m.addEventListener('click', backdropClick);
 
     m.classList.remove('hidden');
   });
@@ -118,6 +136,28 @@ function buildPlayerCtx() {
     onTokenGain: (n) => { run.tokens = (run.tokens || 0) + n; deps.persistRun(); },
     onConnChange: (delta) => { deps.setConn(deps.getConn() + delta); deps.persistRun(); },
   });
+}
+
+// ====================================================================
+// SHELL — layer-0 lobby. Title art + flavor; single LEAVE choice.
+// Player closes the modal, then browses inventory/codex from the map
+// before picking a layer-1 node.
+// ====================================================================
+
+export async function showShell(node) {
+  const m = modal();
+  m.classList.add('shell-modal');
+  try {
+    await showNodeModal({
+      title: 'SHELL PROMPT',
+      flavor: node?.scene?.room || 'The shell prompt blinks. Adventure awaits.',
+      choices: [{ key: 'L', label: 'LEAVE', isLeave: true }],
+    });
+  } finally {
+    // showNodeModal already hid the element; this strips the shell-only class
+    // so the next caller (shrine, event, ...) gets the default 70ch frame.
+    m.classList.remove('shell-modal');
+  }
 }
 
 // ====================================================================
@@ -265,16 +305,30 @@ export async function showCache(node) {
 
   function keyHandler(e) {
     if (resolved) return;
-    if (e.key === 'Escape' || e.key.toLowerCase() === 'l') { e.preventDefault(); leave(); return; }
+    if (e.key === 'Escape' || e.key.toLowerCase() === 'l') {
+      e.preventDefault(); e.stopImmediatePropagation(); leave(e.key); return;
+    }
     const idx = parseInt(e.key, 10) - 1;
-    if (idx >= 0 && idx < selectableCount) { e.preventDefault(); pickFile(idx); }
+    if (idx >= 0 && idx < selectableCount) {
+      e.preventDefault(); e.stopImmediatePropagation(); pickFile(idx, e.key);
+    }
   }
-  window.addEventListener('keydown', keyHandler);
+  function backdropClick(e) {
+    if (e.target !== m || resolved) return;
+    e.preventDefault();
+    leave();
+  }
+  function detachInputs() {
+    window.removeEventListener('keydown', keyHandler, true);
+    m.removeEventListener('click', backdropClick);
+  }
+  window.addEventListener('keydown', keyHandler, true);
+  m.addEventListener('click', backdropClick);
 
-  async function pickFile(idx) {
+  async function pickFile(idx, dismissKey) {
     if (resolved) return;
     resolved = true;
-    window.removeEventListener('keydown', keyHandler);
+    detachInputs();
     actions.querySelectorAll('button').forEach(b => b.disabled = true);
 
     const realName = realNames[idx];
@@ -295,15 +349,15 @@ export async function showCache(node) {
     }
     deps.persistRun();
     await sleep(700);
-    m.classList.add('hidden');
+    closeModal(m, { dismissKey });
     resolveOuter();
   }
 
-  function leave() {
+  function leave(dismissKey) {
     if (resolved) return;
     resolved = true;
-    window.removeEventListener('keydown', keyHandler);
-    m.classList.add('hidden');
+    detachInputs();
+    closeModal(m, { dismissKey });
     deps.log('> Cache closed.');
     resolveOuter();
   }
