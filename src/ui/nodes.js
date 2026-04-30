@@ -41,7 +41,7 @@ export function showNodeModal({ title, flavor, choices, onPick }) {
     const buttonEls = [];
     choices.forEach((c, i) => {
       const btn = document.createElement('button');
-      btn.className = 'modal-choice';
+      btn.className = 'modal-choice' + (c.className ? ` ${c.className}` : '');
       if (c.disabled) btn.disabled = true;
       btn.dataset.index = i;
       btn.innerHTML = `<span class="key">[${c.key}]</span> ${escapeHtml(c.label)}` +
