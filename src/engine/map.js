@@ -124,6 +124,27 @@ export function generateMap(rng, data = null, level = 1) {
   if (level === 2) ensureType(nodes, layers, 'cache');
   ensureType(nodes, layers, 'shrine');
 
+  // Act 1: guarantee a shop in the pre-boss layer (layer 5) so the player
+  // always has at least one final-prep node to spend tokens at before
+  // Wyrm. In a 2-node layer 5 the shop is one of the two choices — the
+  // other still rolls per weights (combat / elite / shrine), preserving
+  // the meaningful pre-boss decision. Conversion priority: combat first,
+  // then shrine, then elite as last resort (so the rare both-elites L5
+  // still gets a shop without sacrificing elite when other types exist).
+  if (level === 1) {
+    const preBossLayer = layers[LAYERS - 2];
+    if (preBossLayer && !preBossLayer.some(n => n.type === 'shop')) {
+      const swap = preBossLayer.find(n => n.type === 'combat') ||
+                   preBossLayer.find(n => n.type === 'shrine') ||
+                   preBossLayer.find(n => n.type !== 'shop');
+      if (swap) {
+        swap.type = 'shop';
+        swap.encounter = null;
+        swap.scene = pickScene(sceneTemplates, swap, rng);
+      }
+    }
+  }
+
   return {
     nodes, layers,
     startId: layers[0][0].id,

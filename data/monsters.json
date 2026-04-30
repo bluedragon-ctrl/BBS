@@ -279,7 +279,7 @@
     "id": "mon_goblin_chief",
     "name": "GOBLIN CHIEF",
     "level": 1,
-    "stats": {"hp": 40, "maxHp": 40, "mp": 0, "maxMp": 0, "spd": 10, "def": 3, "int": 0, "atk": 5},
+    "stats": {"hp": 40, "maxHp": 40, "mp": 0, "maxMp": 0, "spd": 10, "def": 3, "int": 0, "atk": 4},
     "ascii": [
       "   .===.   ",
       "  ($>_<$)  ",
@@ -336,7 +336,7 @@
     "id": "mon_crimson_wyrm",
     "name": "CRIMSON WYRM",
     "level": 1,
-    "stats": {"hp": 80, "maxHp": 80, "mp": 0, "maxMp": 0, "spd": 10, "def": 4, "int": 4, "atk": 7},
+    "stats": {"hp": 80, "maxHp": 80, "mp": 0, "maxMp": 0, "spd": 10, "def": 4, "int": 4, "atk": 6},
     "ascii": [
       "        ___           ",
       "     _-(   )-_        ",
