@@ -70,7 +70,11 @@ function renderGridSpans(el, grid) {
 
 export function renderStaticBanner(el, art, hue = 'red') {
   el.className = `banner ${hue}`;
-  el.textContent = art;
+  // Use the same span-grid path as the animated render so per-cell 1ch boxes
+  // keep ANSI Shadow's box-drawing chars from micro-drifting in VT323.
+  const grid = toGrid(art);
+  const { rows, cols } = gridDims(grid);
+  renderGridSpans(el, padGrid(grid, cols, rows));
 }
 
 export function playIntroBanner({ container, mode = 'full' } = {}) {
