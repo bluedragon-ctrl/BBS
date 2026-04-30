@@ -198,12 +198,36 @@ export async function resolveNode(node, opts = {}) {
       return showGameOver('victory');
     }
 
+    // Inter-room heal — smooths the cold-run difficulty curve. Fires after
+    // any successfully-resolved non-entry node (combat-victory, shrine,
+    // shop, event). Doesn't fire on entry, defeat, or flee (those returned
+    // early above).
+    interRoomHeal();
+
     persistRun();
     showScreen('map');
     renderMap();
   } finally {
     runBusy = false;
   }
+}
+
+// Fraction of the player's maxHP recovered between every node transition.
+// Tuning lever — bump down if Act 1 starts feeling trivial, up if cold-run
+// difficulty stays too punishing.
+const INTER_ROOM_HEAL_PCT = 0.25;
+
+function interRoomHeal() {
+  const player = state.run?.player;
+  if (!player?.stats) return;
+  const maxHp = player.stats.maxHp ?? 0;
+  const before = player.stats.hp ?? 0;
+  if (before >= maxHp) return; // already topped up
+  const heal = Math.floor(maxHp * INTER_ROOM_HEAL_PCT);
+  if (heal <= 0) return;
+  player.stats.hp = Math.min(maxHp, before + heal);
+  const recovered = player.stats.hp - before;
+  if (recovered > 0) logMessage(`> +${recovered} HP recovered.`);
 }
 
 function grantCombatTokens(type) {

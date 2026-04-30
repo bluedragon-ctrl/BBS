@@ -55,7 +55,7 @@ export function makePlayerActor(opts = {}) {
     dead: false,
     actionCount: 0,
     loadout: opts.loadout || (() => {
-      const starterSpells = ['spl_missile', 'spl_minor_mend'];
+      const starterSpells = ['spl_missile', 'spl_mend'];
       const unlockedSpells = getUnlocked('spells').filter(id => !starterSpells.includes(id));
       const unlockedWearables = getUnlocked('wearables');
       return {
