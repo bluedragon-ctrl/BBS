@@ -8,7 +8,7 @@
     "cost": {"mp": 2},
     "targeting": "single",
     "effects": [
-      {"type": "damage", "target": "target", "amount": "1d6+INT", "damageType": "magical"}
+      {"type": "damage", "target": "target", "amount": "1d8+INT", "damageType": "magical"}
     ],
     "codexBlurb": "A thin dart of mana. Cheap, reliable, taught to every apprentice."
   },
