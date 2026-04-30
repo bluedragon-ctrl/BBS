@@ -232,7 +232,9 @@ function interRoomHeal() {
 
 function grantCombatTokens(type) {
   let amt = 0;
-  if (type === 'combat') amt = state.rng() < 0.5 ? 1 : 0;
+  // Regular combat: 65% chance of 1 token (was 50%). Tuned up by playtest
+  // to add ~1 expected token per Act 1 run on average across ~7 combats.
+  if (type === 'combat') amt = state.rng() < 0.65 ? 1 : 0;
   else if (type === 'elite') amt = 1 + Math.floor(state.rng() * 2); // 1-2
   else if (type === 'boss')  amt = 5 + Math.floor(state.rng() * 4); // 4 + 1d4 → 5-8
   if (amt > 0) {
@@ -276,9 +278,14 @@ function showStubNodeModal(node) {
 }
 
 async function showGameOver(kind) {
+  // Capture run-level state before clearing so the game-over sequence can
+  // pick the right tone — Act 1 death is BBS-monitoring style; Act 2 death
+  // is the connectivity-themed "signal cut" sequence which only makes
+  // literal sense when SYSOP is the active threat.
+  const level = state.run?.level ?? 1;
   state.run = null;
   clearMapRun();
-  const lines = kind === 'victory' ? buildVictorySequence() : buildDeathSequence();
+  const lines = kind === 'victory' ? buildVictorySequence() : buildDeathSequence(level);
   await showTerminalSequence(lines, {
     theme: kind === 'victory' ? 'normal' : 'failure',
     dismissOn: 'press',
@@ -289,7 +296,25 @@ async function showGameOver(kind) {
   showScreen('boot');
 }
 
-function buildDeathSequence() {
+function buildDeathSequence(level = 1) {
+  // Act 1 (door-game death): the BBS observes the adventurer falling; the
+  // 'USER PURGED' line is heavier than it should be for a game-over —
+  // deliberate hint that something more than just a game-over is happening.
+  if (level === 1) {
+    return [
+      '> [event] adventurer: defeated',
+      '> [tick] session: ended',
+      { delay: 250 },
+      { noise: '░▒▓█▓▒░' },
+      { delay: 200 },
+      { text: '> /usr/sysop: USER PURGED.', class: 'danger' },
+      '',
+      '> [PRESS ENTER]',
+    ];
+  }
+
+  // Act 2: SYSOP is actively severing the player's signal. Connectivity
+  // flavor lands literally here — they ARE losing the connection.
   return [
     { text: '> SIGNAL DEGRADING', class: 'warn' },
     { delay: 350 },
