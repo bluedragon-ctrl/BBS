@@ -558,8 +558,32 @@ export async function showShop(node) {
 // ====================================================================
 
 export async function showBossIntro() {
-  // Borders crawl with corruption + a couple of frame tears as the SYSOP
-  // forces its way onto the wire.
+  const level = deps?.getRun?.()?.level ?? 1;
+
+  // Act 1 (door-game dragon): SYSOP is passively monitoring, nothing
+  // unusual yet. Clean terminal, no glitches. The benign-now framing
+  // sets up sharp contrast for the Act 2 reveal where SYSOP turns
+  // hostile after the glitch tears through the door-game's surface.
+  if (level === 1) {
+    await showTerminalSequence([
+      '> [tick] connection: stable',
+      '> [tick] session integrity: nominal',
+      '> /usr/sysop: passive monitoring active',
+      { delay: 400 },
+      "> [event] adventurer reached scripted boss content",
+      "> [event] room: dragon's lair (1 of 1)",
+      { delay: 500 },
+      '> /usr/sysop: carry on',
+      '',
+      '> [press any key to enter the lair]',
+    ], { theme: 'normal', dismissOn: 'press' });
+    return;
+  }
+
+  // Act 2 (SYSOP's own chamber): borders crawl with corruption + a
+  // couple of frame tears as the SYSOP forces its way onto the wire.
+  // First time SYSOP ever speaks with hostility — the door-game's
+  // 'carry on' has been replaced.
   const { triggerGlitch } = await import('./glitch.js');
   document.querySelectorAll('.panel, .main-pane').forEach(el => {
     triggerGlitch('corruptBorders', 0.8, el);

@@ -51,7 +51,7 @@
     ],
     "ai": "aggressive",
     "actions": [
-      {"name": "stabs", "weight": 3,
+      {"name": "stabs", "weight": 4,
        "effects": [{"type": "damage", "target": "target", "amount": "1d4+ATK", "damageType": "physical"}]},
       {"name": "slashes a wound across", "weight": 1,
        "effects": [
