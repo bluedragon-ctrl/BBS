@@ -263,7 +263,7 @@ pre {
    rounding can't drift across long ANSI Shadow rows. */
 .banner {
   margin: 0 0 1lh 0;
-  font-size: 14px;
+  font-size: clamp(14px, 1.3vw, 18px);
   line-height: 1;
   letter-spacing: 0;
   white-space: pre;
