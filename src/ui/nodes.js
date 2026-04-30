@@ -165,28 +165,62 @@ export async function showShell(node) {
 // SHRINE
 // ====================================================================
 
+// Buffer granted by Act 1 shrine actions. Stacks above maxHP / maxMP — the
+// player carries an over-shield until damage / spending brings them back
+// under the cap, at which point inter-room heal resumes its normal behavior.
+const SHRINE_OVERHEAL_HP = 20;
+const SHRINE_OVERHEAL_MP = 20;
+
 export async function showShrine(node) {
   const run = deps.getRun();
   const player = run.player;
+  const level = run.level ?? 1;
+
+  // Act 1 shrines (Eldarmark wayside altars) grant overheal — +20 above max
+  // for HP or MP. Act 2 shrines (BBS pockets of calm) keep DEFRAG / RESYNC
+  // until their own content beats land.
+  const choices = level === 2
+    ? [
+        { key: '1', label: 'DEFRAG', detail: 'restore HP to full' },
+        { key: '2', label: 'RESYNC', detail: 'restore 25% CONN' },
+        { key: 'L', label: 'LEAVE',  isLeave: true },
+      ]
+    : [
+        { key: '1', label: 'BOOST HEALTH', detail: `+${SHRINE_OVERHEAL_HP} HP (may exceed max)` },
+        { key: '2', label: 'BOOST MANA',   detail: `+${SHRINE_OVERHEAL_MP} MP (may exceed max)` },
+        { key: 'L', label: 'LEAVE',        isLeave: true },
+      ];
+
   await showNodeModal({
-    title: 'SHRINE',
+    title: level === 2 ? 'SHRINE' : 'WAYSIDE ALTAR',
     flavor: mergeSceneFlavor(node?.scene, 'A pocket of static calm.'),
-    choices: [
-      { key: '1', label: 'DEFRAG', detail: 'restore HP to full' },
-      { key: '2', label: 'RESYNC', detail: 'restore 25% CONN' },
-      { key: 'L', label: 'LEAVE',  isLeave: true },
-    ],
+    choices,
     onPick: (i) => {
-      if (i === 0) {
-        const before = player.stats.hp;
-        player.stats.hp = player.stats.maxHp;
-        deps.log(`> DEFRAG complete. HP ${before} → ${player.stats.hp}.`);
-      } else if (i === 1) {
-        const newConn = Math.min(1, deps.getConn() + 0.25);
-        deps.setConn(newConn);
-        deps.log(`> RESYNC complete. Connection +25%.`);
+      if (level === 2) {
+        if (i === 0) {
+          const before = player.stats.hp;
+          player.stats.hp = player.stats.maxHp;
+          deps.log(`> DEFRAG complete. HP ${before} → ${player.stats.hp}.`);
+        } else if (i === 1) {
+          const newConn = Math.min(1, deps.getConn() + 0.25);
+          deps.setConn(newConn);
+          deps.log(`> RESYNC complete. Connection +25%.`);
+        } else {
+          deps.log('> Shrine left undisturbed.');
+        }
       } else {
-        deps.log('> Shrine left undisturbed.');
+        // Act 1: overheal — bump current value, no cap clamp at this site.
+        if (i === 0) {
+          const before = player.stats.hp ?? 0;
+          player.stats.hp = before + SHRINE_OVERHEAL_HP;
+          deps.log(`> The altar warms you. HP ${before} → ${player.stats.hp}.`);
+        } else if (i === 1) {
+          const before = player.stats.mp ?? 0;
+          player.stats.mp = before + SHRINE_OVERHEAL_MP;
+          deps.log(`> Your mind sharpens. MP ${before} → ${player.stats.mp}.`);
+        } else {
+          deps.log('> You leave the altar undisturbed.');
+        }
       }
       deps.persistRun();
     },
