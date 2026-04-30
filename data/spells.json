@@ -34,7 +34,7 @@
     "cost": {"mp": 3},
     "targeting": "self",
     "effects": [
-      {"type": "heal", "target": "self", "amount": "1d6+INT"}
+      {"type": "heal", "target": "self", "amount": "2d6+INT"}
     ],
     "codexBlurb": "Knit flesh with phosphor light. The first stitch in any spellbook — strong as the will behind it."
   },
