@@ -44,8 +44,20 @@ export const NODE_FLAVOR = {
 const LAYERS = 7;                          // 0..6
 const NODES_PER_LAYER = [1, 3, 3, 4, 3, 2, 1];
 
-// Per-layer type weights (for layers 1..5; 0 is entry-combat, 6 is boss)
-const LAYER_WEIGHTS = [
+// Per-layer type weights (for layers 1..5; 0 is entry-shell, 6 is boss).
+// Act 1 (level 1) uses shops in place of caches — the unlock loop dedupes
+// caches into near-empty pools after a few runs, so caches as a node type
+// don't earn their place in the door-game. Act 2 (level 2) keeps caches
+// because the discovery framing fits the BBS substrate.
+const LAYER_WEIGHTS_L1 = [
+  /* layer 1 */ { combat: 4, event: 1 },
+  /* layer 2 */ { combat: 3, event: 1, shop: 1 },
+  /* layer 3 */ { combat: 3, shop: 2, shrine: 1, elite: 1, event: 1 },
+  /* layer 4 */ { combat: 2, shop: 2, shrine: 1, elite: 1, event: 1 },
+  /* layer 5 */ { combat: 2, elite: 2, shop: 1, shrine: 1 },
+];
+
+const LAYER_WEIGHTS_L2 = [
   /* layer 1 */ { combat: 4, event: 1 },
   /* layer 2 */ { combat: 3, event: 1, cache: 1 },
   /* layer 3 */ { combat: 3, shop: 1, shrine: 1, elite: 1, event: 1, cache: 1 },
@@ -53,12 +65,17 @@ const LAYER_WEIGHTS = [
   /* layer 5 */ { combat: 2, elite: 2, shop: 1, shrine: 1 },
 ];
 
+function pickLayerWeights(level) {
+  return level === 2 ? LAYER_WEIGHTS_L2 : LAYER_WEIGHTS_L1;
+}
+
 export function generateMap(rng, data = null, level = 1) {
   const nodes = new Map();
   const layers = [];
   const sceneTemplates = data
     ? data.list('nodes').filter(t => t.scene && (t.level ?? 1) === level)
     : [];
+  const layerWeights = pickLayerWeights(level);
 
   for (let li = 0; li < LAYERS; li++) {
     const count = NODES_PER_LAYER[li];
@@ -68,7 +85,7 @@ export function generateMap(rng, data = null, level = 1) {
       let type;
       if (li === 0)               type = 'shell';
       else if (li === LAYERS - 1) type = 'boss';
-      else                        type = pickType(rng, LAYER_WEIGHTS[li - 1]);
+      else                        type = pickType(rng, layerWeights[li - 1]);
       const node = {
         id, type, layer: li, col: ci,
         edges: [],
@@ -102,8 +119,9 @@ export function generateMap(rng, data = null, level = 1) {
     }
   }
 
-  // Soft constraint: at least one cache and one shrine in the run.
-  ensureType(nodes, layers, 'cache');
+  // Soft constraint: at least one shrine in every run, and one cache in
+  // Act 2 runs (Act 1 uses shops in place of caches — see weight tables).
+  if (level === 2) ensureType(nodes, layers, 'cache');
   ensureType(nodes, layers, 'shrine');
 
   return {
