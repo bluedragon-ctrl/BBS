@@ -18,6 +18,7 @@ import { showScreen } from './screen.js';
 import { logMessage } from './log.js';
 import { formatTokens } from './ui/util.js';
 import { wipeCodex } from './engine/codex.js';
+import { wipeFlags } from './engine/flags.js';
 
 let state = null;
 let setConn = () => {};
@@ -117,6 +118,7 @@ export function backToBoot() {
 export function wipeAllData() {
   wipeSave();
   wipeCodex();
+  wipeFlags();
   state.run = null;
   state.conn = 1.0;
   setConn(1.0);

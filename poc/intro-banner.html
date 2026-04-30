@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NETROMANCER.BBS — intro banner PoC</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+  :root {
+    --bg-deep: #05000c;
+    --fg:      #00ff9f;
+    --enemy:   #ff4d6d;
+    --accent:  #ff00ff;
+    --danger:  #ff003c;
+    --dim:     #2a4858;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg-deep);
+    color: var(--fg);
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 18px;
+    letter-spacing: 0.02em;
+  }
+
+  h1 {
+    font-weight: normal;
+    color: var(--accent);
+    margin: 1.2rem 1rem 0.2rem;
+    text-shadow: 0 0 6px var(--accent);
+    font-size: 1.4rem;
+  }
+
+  .toolbar {
+    margin: 0.4rem 1rem 1rem;
+  }
+  button {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    font: inherit;
+    padding: 0.2rem 0.8rem;
+    cursor: pointer;
+    text-shadow: 0 0 4px var(--accent);
+  }
+  button:hover { background: rgba(255, 0, 255, 0.12); }
+
+  .demo {
+    margin: 1.5rem 1rem 2.5rem;
+    padding: 1rem;
+    border: 1px solid var(--dim);
+    border-radius: 4px;
+  }
+  .demo h2 {
+    font-weight: normal;
+    margin: 0 0 0.4rem;
+    color: var(--fg);
+    font-size: 1.1rem;
+    text-shadow: 0 0 4px var(--fg);
+  }
+  .demo p.note {
+    color: var(--dim);
+    margin: 0 0 0.8rem;
+    font-size: 0.95rem;
+  }
+
+  .stage {
+    background: #02000a;
+    padding: 1rem;
+    overflow-x: auto;
+    border: 1px dashed var(--dim);
+    min-height: 14em;
+  }
+
+  /* Match the live game's .title-art shell: green phosphor with multi-layer glow
+     and a slow brightness pulse. Red variant reuses the same shape, only hue swaps. */
+  pre.banner {
+    margin: 0;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: pre;
+    color: var(--fg);
+  }
+  /* Force every char into a fixed 1ch cell so per-span subpixel rounding can't
+     accumulate into visible drift across long rows. */
+  pre.banner span {
+    display: inline-block;
+    width: 1ch;
+    text-align: center;
+    vertical-align: top;
+  }
+
+  pre.banner.green {
+    color: var(--fg);
+    text-shadow:
+      0 0 2px var(--fg),
+      0 0 8px rgba(0, 255, 159, 0.45);
+    animation: title-pulse 3.2s ease-in-out infinite;
+  }
+  pre.banner.magenta {
+    color: var(--accent);
+    text-shadow:
+      0 0 2px var(--accent),
+      0 0 8px rgba(255, 0, 255, 0.45);
+    animation: title-pulse 3.2s ease-in-out infinite;
+  }
+  pre.banner.red {
+    color: var(--enemy);
+    text-shadow:
+      0 0 2px var(--enemy),
+      0 0 8px rgba(255, 77, 109, 0.4);
+  }
+
+  @keyframes title-pulse {
+    0%, 100% { filter: brightness(1); }
+    50%      { filter: brightness(1.1); }
+  }
+
+  pre.banner span.churn  { color: var(--accent); opacity: 0.85; }
+  /* Locked cells render their own magenta color + glow so the wave reveals
+     the destination hue as it sweeps — no red NETROMANCER flash before the
+     parent class flips at the end. */
+  pre.banner span.locked {
+    color: var(--accent);
+    text-shadow:
+      0 0 2px var(--accent),
+      0 0 8px rgba(255, 0, 255, 0.45);
+  }
+</style>
+</head>
+<body>
+
+<h1>NETROMANCER.BBS — intro banner PoC</h1>
+
+<section class="demo" data-effect="B">
+  <h2>Crossfade scramble — CRIMSON WYRM → churn → NETROMANCER</h2>
+  <p class="note">CW holds, then every cell churns through random glyphs in a L→R wave, settling on NM in green title-art styling.</p>
+  <div class="stage"><pre class="banner red" id="stage-B"></pre></div>
+  <div style="margin-top:0.6rem;"><button data-replay="B">↻ replay</button></div>
+</section>
+
+<script type="module">
+// ─── Banner source (provided by user; leading `'` is a comment marker — strip it,
+//     keep the art's leading whitespace intact so kerning is preserved). ────────
+function stripCommentMark(text) {
+  return text.split('\n').map(line => line.startsWith("'") ? line.slice(1) : line).join('\n');
+}
+
+const CW = String.raw`
+ ██████╗██████╗ ██╗███╗   ███╗███████╗ ██████╗ ███╗   ██╗    ██╗    ██╗██╗   ██╗██████╗ ███╗   ███╗
+██╔════╝██╔══██╗██║████╗ ████║██╔════╝██╔═══██╗████╗  ██║    ██║    ██║╚██╗ ██╔╝██╔══██╗████╗ ████║
+██║     ██████╔╝██║██╔████╔██║███████╗██║   ██║██╔██╗ ██║    ██║ █╗ ██║ ╚████╔╝ ██████╔╝██╔████╔██║
+██║     ██╔══██╗██║██║╚██╔╝██║╚════██║██║   ██║██║╚██╗██║    ██║███╗██║  ╚██╔╝  ██╔══██╗██║╚██╔╝██║
+╚██████╗██║  ██║██║██║ ╚═╝ ██║███████║╚██████╔╝██║ ╚████║    ╚███╔███╔╝   ██║   ██║  ██║██║ ╚═╝ ██║
+ ╚═════╝╚═╝  ╚═╝╚═╝╚═╝     ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝     ╚══╝╚══╝    ╚═╝   ╚═╝  ╚═╝╚═╝     ╚═╝
+`.replace(/^\n/, '').replace(/\n$/, '');
+
+const NM = String.raw`
+███╗   ██╗███████╗████████╗██████╗  ██████╗ ███╗   ███╗ █████╗ ███╗   ██╗ ██████╗███████╗██████╗
+████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██╔═══██╗████╗ ████║██╔══██╗████╗  ██║██╔════╝██╔════╝██╔══██╗
+██╔██╗ ██║█████╗     ██║   ██████╔╝██║   ██║██╔████╔██║███████║██╔██╗ ██║██║     █████╗  ██████╔╝
+██║╚██╗██║██╔══╝     ██║   ██╔══██╗██║   ██║██║╚██╔╝██║██╔══██║██║╚██╗██║██║     ██╔══╝  ██╔══██╗
+██║ ╚████║███████╗   ██║   ██║  ██║╚██████╔╝██║ ╚═╝ ██║██║  ██║██║ ╚████║╚██████╗███████╗██║  ██║
+╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝╚══════╝╚═╝  ╚═╝
+`.replace(/^\n/, '').replace(/\n$/, '');
+
+// ─── Banner helpers ───────────────────────────────────────────────────
+function toGrid(text) {
+  return text.split('\n').map(line => [...line]);
+}
+
+function padGrid(grid, width, height) {
+  const rows = [];
+  const padTop = Math.floor((height - grid.length) / 2);
+  for (let r = 0; r < height; r++) {
+    const src = grid[r - padTop] || [];
+    const padLeft = Math.floor((width - src.length) / 2);
+    const row = [];
+    for (let c = 0; c < width; c++) {
+      const sc = c - padLeft;
+      row.push(src[sc] !== undefined ? src[sc] : ' ');
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+
+function gridDims(grid) {
+  return { rows: grid.length, cols: Math.max(...grid.map(r => r.length)) };
+}
+
+function renderGridSpans(el, grid) {
+  // Build with one big innerHTML for speed — these grids are large.
+  let html = '';
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      const ch = grid[r][c];
+      // Escape only the chars HTML cares about; the figlet glyphs are safe Unicode.
+      const safe = ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '&' ? '&amp;' : ch;
+      html += `<span data-r="${r}" data-c="${c}">${safe}</span>`;
+    }
+    html += '\n';
+  }
+  el.innerHTML = html;
+}
+
+// ─── Glyph pool for churn ─────────────────────────────────────────────
+const CHURN = [...'!@#$%^&*<>{}[]|\\/=_+-?~"\':;,.█▓▒░╔╗╚╝═║╠╣╦╩╬•◦∙·'];
+const rand = arr => arr[(Math.random() * arr.length) | 0];
+
+// ─── Compute aligned grids (centered, padded to common shape) ─────────
+const cwRaw = toGrid(CW), nmRaw = toGrid(NM);
+const cwDim = gridDims(cwRaw), nmDim = gridDims(nmRaw);
+const W = Math.max(cwDim.cols, nmDim.cols);
+const H = Math.max(cwDim.rows, nmDim.rows);
+const cwG = padGrid(cwRaw, W, H);
+const nmG = padGrid(nmRaw, W, H);
+
+// ─── Effect: crossfade scramble (CW → churn → NM) ─────────────────────
+function effectB(stageEl) {
+  // start with CW rendered in red
+  renderGridSpans(stageEl, cwG);
+  stageEl.className = 'banner red';
+
+  // Cache cell spans by [r][c] for O(1) lookup during animation.
+  const lookup = new Array(H);
+  for (let r = 0; r < H; r++) lookup[r] = new Array(W);
+  stageEl.querySelectorAll('span').forEach(s => {
+    lookup[+s.dataset.r][+s.dataset.c] = s;
+  });
+
+  const startChurn = 2700;       // hold CRIMSON WYRM on screen for a beat
+  const churnSpan  = 1300;       // window over which cells start churning
+  const churnDur   = 950;        // each cell churns for this long
+  const totalDur   = startChurn + churnSpan + churnDur + 250;
+
+  // Each cell's churn-start is biased L→R for a sweeping wave.
+  const cells = [];
+  for (let r = 0; r < H; r++) {
+    for (let c = 0; c < W; c++) {
+      const span = lookup[r][c];
+      if (!span) continue;
+      cells.push({
+        span, r, c,
+        churnAt: startChurn + (c / W) * churnSpan + Math.random() * 150,
+        lockAt:  null, // set below
+      });
+    }
+  }
+  cells.forEach(o => { o.lockAt = o.churnAt + churnDur; });
+
+  const t0 = performance.now();
+  let raf;
+  function frame(now) {
+    const t = now - t0;
+    for (const o of cells) {
+      const target = nmG[o.r][o.c];
+      const source = cwG[o.r][o.c];
+      if (t < o.churnAt) {
+        // CW phase — content already rendered, leave alone
+      } else if (t < o.lockAt) {
+        // Churn — random glyph, magenta-tinted. Keep blanks blank.
+        if (target === ' ' && source === ' ') {
+          if (o.span.textContent !== ' ') o.span.textContent = ' ';
+        } else {
+          o.span.textContent = rand(CHURN);
+          if (o.span.className !== 'churn') o.span.className = 'churn';
+        }
+      } else if (!o.span.dataset.locked) {
+        o.span.textContent = target;
+        o.span.className = 'locked';
+        o.span.dataset.locked = '1';
+      }
+    }
+    if (t > totalDur) {
+      // Settle on magenta — the hacker/exploit signal color in the game palette.
+      stageEl.className = 'banner magenta';
+      cancelAnimationFrame(raf);
+      return;
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  raf = requestAnimationFrame(frame);
+}
+
+// ─── Wire up ──────────────────────────────────────────────────────────
+const stage = document.getElementById('stage-B');
+
+function play() { effectB(stage); }
+
+document.querySelector('button[data-replay="B"]').addEventListener('click', play);
+
+// Auto-play on load
+play();
+</script>
+</body>
+</html>
