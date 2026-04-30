@@ -6,16 +6,16 @@ import { ticksUntilAct, isAlive } from '../engine/scheduler.js';
 import { effectiveStat } from '../engine/atoms.js';
 import { formatSceneString, sceneContextFromCombat } from '../engine/scene.js';
 import { showTerminalSequence } from './terminal.js';
+import { showNodeModal } from './nodes.js';
 import { triggerGlitch, corruptName } from './glitch.js';
 import { sleep, escapeHtml, formatSpellCost, countBy, formatStatsBlock, formatStatLine, armSwallow, wireScreenKeys } from './util.js';
 
 let deps = null;          // { data, rng, log, logFlavor, awaitLogIdle, showScreen, activeScreen, getConn, onConnCost }
 let currentCombat = null;
 let resolvePlayerAction = null;
-let uiState = 'idle';     // 'idle' | 'inspectMode' | 'pickTarget' | 'pickSpell' | 'awaitingEngine'
+let uiState = 'idle';     // 'idle' | 'inspectMode' | 'pickTarget' | 'awaitingEngine'
 let pendingAction = null;
 let inspectActorId = null;
-let spellFocusIndex = 0;
 let targetFocusIndex = 0;
 let connDrainedThisTurn = 0;
 let currentScene = null;  // { room, pre, post } from the active node — null when absent
@@ -23,11 +23,12 @@ let lastStatsHtml = '';
 let lastInspectHtml = '';
 let lastListHtml = '';
 
+const IDLE_PROMPT = 'Your turn — [A]ttack [C]ast [I]tem [W]ait [X]Inspect [F]lee';
+
 export function initCombatUi(d) {
   deps = d;
   wireButtons();
   wireRowClicks();
-  wireSpellModalBackdrop();
   wireKeys();
 }
 
@@ -184,7 +185,7 @@ function handleGetPlayerAction(_actor) {
   if (resolvePlayerAction) console.warn('overlapping getPlayerAction — previous resolver dropped');
   renderAll();
   uiState = 'idle';
-  setPrompt('Your turn — [A]ttack [C]ast [I]tem [W]ait [X]Inspect [F]lee');
+  setPrompt(IDLE_PROMPT);
   return new Promise(resolve => { resolvePlayerAction = resolve; });
 }
 
@@ -207,19 +208,47 @@ function wireButtons() {
   });
 }
 
-function handleAction(action) {
+async function handleAction(action) {
   if (!resolvePlayerAction) return;
   switch (action) {
     case 'attack':
       pendingAction = { kind: 'attack' };
       enterPickTarget('enemies');
       break;
-    case 'cast':
-      openSpellModal();
+    case 'cast': {
+      const spellId = await chooseSpell();
+      if (!resolvePlayerAction) return; // turn was resolved while modal was open
+      if (!spellId) { setPrompt(IDLE_PROMPT); return; }
+      const sp = deps.data.spell(spellId);
+      if (!sp) { setPrompt(IDLE_PROMPT); return; }
+      pendingAction = { kind: 'cast', spellId };
+      if (sp.targeting === 'self') {
+        const player = currentCombat.actors.find(a => a.isPlayer);
+        completeTargetPick(player);
+      } else if (['allEnemies', 'allAllies', 'all'].includes(sp.targeting)) {
+        resolveAction({ kind: 'cast', spellId, targetId: null });
+      } else {
+        enterPickTarget('enemies');
+      }
       break;
-    case 'item':
-      openItemModal();
+    }
+    case 'item': {
+      const itemId = await chooseItem();
+      if (!resolvePlayerAction) return;
+      if (!itemId) { setPrompt(IDLE_PROMPT); return; }
+      const item = deps.data.item(itemId);
+      if (!item) { setPrompt(IDLE_PROMPT); return; }
+      pendingAction = { kind: 'item', itemId };
+      if (!item.targeting || item.targeting === 'self') {
+        const player = currentCombat.actors.find(a => a.isPlayer);
+        completeTargetPick(player);
+      } else if (['allEnemies', 'allAllies', 'all'].includes(item.targeting)) {
+        resolveAction({ kind: 'item', itemId, targetId: null });
+      } else {
+        enterPickTarget('enemies');
+      }
       break;
+    }
     case 'wait':
       resolveAction({ kind: 'wait' });
       break;
@@ -227,7 +256,7 @@ function handleAction(action) {
       uiState = uiState === 'inspectMode' ? 'idle' : 'inspectMode';
       setPrompt(uiState === 'inspectMode'
         ? 'Inspect mode — click any combatant. [Esc] back.'
-        : 'Your turn — [A]ttack [C]ast [I]tem [W]ait [X]Inspect [F]lee');
+        : IDLE_PROMPT);
       break;
     case 'flee':
       resolveAction({ kind: 'flee' });
@@ -306,168 +335,74 @@ function completeTargetPick(target) {
 }
 
 function cancelPick() {
-  if (uiState === 'pickSpell') closeSpellModal();
-  if (uiState === 'pickItem')  closeItemModal();
-  if (uiState === 'pickTarget' || uiState === 'pickSpell' || uiState === 'pickItem' || uiState === 'inspectMode') {
+  if (uiState === 'pickTarget' || uiState === 'inspectMode') {
     pendingAction = null;
     clearTargetable();
     uiState = 'idle';
-    if (resolvePlayerAction) {
-      setPrompt('Your turn — [A]ttack [C]ast [I]tem [W]ait [X]Inspect [F]lee');
-    }
+    if (resolvePlayerAction) setPrompt(IDLE_PROMPT);
   }
 }
 
-// ---------- Spell modal ----------
+// ---------- Spell / item pickers ----------
+// These run through showNodeModal, so they inherit the unified modal-input
+// behaviour: capture-phase keys, armSwallow on dismiss, backdrop-click cancel,
+// keyboard nav with focus ring, disabled choices.
 
-function openSpellModal() {
+async function chooseSpell() {
   const player = currentCombat.actors.find(a => a.isPlayer);
   const knownIds = player.loadout?.spells || [];
-  const list = document.getElementById('spell-list');
-  list.innerHTML = '';
-  knownIds.forEach((spellId, i) => {
-    const sp = deps.data.spell(spellId);
-    if (!sp) return;
-    const mpOk = (player.stats.mp ?? 0) >= (sp.cost?.mp ?? 0);
-    const connOk = deps.getConn() * 100 >= (sp.cost?.conn ?? 0);
-    const enabled = mpOk && connOk;
-    const li = document.createElement('li');
-    li.className = `school-${sp.school}`;
-    if (!enabled) li.classList.add('disabled');
-    const key = String.fromCharCode(49 + i); // '1', '2', '3'...
-    li.innerHTML = `
-      <span class="spell-key">[${key}]</span>
-      <span class="spell-name">${sp.name}</span>
-      <span class="spell-school">${sp.school}</span>
-      <span class="spell-cost">${formatSpellCost(sp)}</span>
-    `;
-    li.dataset.spellId = spellId;
-    li.dataset.key = key;
-    if (enabled) li.addEventListener('click', () => pickSpell(spellId));
-    li.addEventListener('mouseover', () => {
-      if (!li.classList.contains('disabled')) {
-        spellFocusIndex = i;
-        updateSpellFocus();
-      }
-    });
-    list.appendChild(li);
-  });
-  document.getElementById('spell-modal').classList.remove('hidden');
-  uiState = 'pickSpell';
-  // Default focus: first non-disabled item
-  const items = [...document.querySelectorAll('#spell-list li')];
-  spellFocusIndex = items.findIndex(li => !li.classList.contains('disabled'));
-  if (spellFocusIndex < 0) spellFocusIndex = 0;
-  updateSpellFocus();
+  const choices = knownIds
+    .map((spellId, i) => {
+      const sp = deps.data.spell(spellId);
+      if (!sp) return null;
+      const mpOk   = (player.stats.mp ?? 0) >= (sp.cost?.mp ?? 0);
+      const connOk = deps.getConn() * 100 >= (sp.cost?.conn ?? 0);
+      return {
+        key: String.fromCharCode(49 + i),
+        label: sp.name,
+        detail: `${sp.school} · ${formatSpellCost(sp)}`,
+        disabled: !(mpOk && connOk),
+        className: `school-${sp.school}`,
+        _spellId: spellId,
+      };
+    })
+    .filter(Boolean);
+  choices.push({ key: 'L', label: 'CANCEL', isLeave: true });
   setPrompt('Choose a spell — [↑↓] move, [Enter] cast, [1-9] direct, [Esc] cancel.');
+  const i = await showNodeModal({ title: 'CAST', flavor: '', choices });
+  const chosen = choices[i];
+  if (!chosen || chosen.isLeave) return null;
+  return chosen._spellId;
 }
 
-function updateSpellFocus() {
-  const items = document.querySelectorAll('#spell-list li');
-  items.forEach((li, i) => li.classList.toggle('focused', i === spellFocusIndex));
-}
-
-function moveSpellFocus(delta) {
-  const items = [...document.querySelectorAll('#spell-list li')];
-  if (!items.length) return;
-  let i = spellFocusIndex;
-  for (let step = 0; step < items.length; step++) {
-    i = (i + delta + items.length) % items.length;
-    if (!items[i].classList.contains('disabled')) {
-      spellFocusIndex = i;
-      updateSpellFocus();
-      return;
-    }
-  }
-}
-
-function confirmFocusedSpell() {
-  const items = [...document.querySelectorAll('#spell-list li')];
-  const li = items[spellFocusIndex];
-  if (li && !li.classList.contains('disabled')) pickSpell(li.dataset.spellId);
-}
-
-function closeSpellModal() {
-  document.getElementById('spell-modal').classList.add('hidden');
-}
-
-function wireSpellModalBackdrop() {
-  document.getElementById('spell-modal').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) cancelPick();
-  });
-  document.getElementById('item-modal').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) cancelPick();
-  });
-}
-
-function pickSpell(spellId) {
-  const sp = deps.data.spell(spellId);
-  if (!sp) return;
-  closeSpellModal();
-  pendingAction = { kind: 'cast', spellId };
-  if (sp.targeting === 'self') {
-    const player = currentCombat.actors.find(a => a.isPlayer);
-    completeTargetPick(player);
-  } else if (['allEnemies', 'allAllies', 'all'].includes(sp.targeting)) {
-    resolveAction({ kind: 'cast', spellId, targetId: null });
-  } else {
-    enterPickTarget('enemies');
-  }
-}
-
-// ---------- Item modal ----------
-
-function openItemModal() {
+async function chooseItem() {
   const player = currentCombat.actors.find(a => a.isPlayer);
   const list = player.loadout?.consumables || [];
-  const listEl = document.getElementById('item-list');
-  listEl.innerHTML = '';
   if (!list.length) {
     deps.log('No items available.');
-    return;
+    return null;
   }
-  // Group by item id with counts.
   const counts = countBy(list);
   const ids = Object.keys(counts);
-  ids.forEach((id, i) => {
-    const item = deps.data.item(id);
-    if (!item) return;
-    const li = document.createElement('li');
-    li.className = `school-${item.kind || 'consumable'}`;
-    const key = String.fromCharCode(49 + i);
-    li.innerHTML = `
-      <span class="spell-key">[${key}]</span>
-      <span class="spell-name">${item.name}</span>
-      <span class="spell-school">×${counts[id]}</span>
-      <span class="spell-cost">${item.blurb || ''}</span>
-    `;
-    li.dataset.itemId = id;
-    li.dataset.key = key;
-    li.addEventListener('click', () => pickItem(id));
-    listEl.appendChild(li);
-  });
-  document.getElementById('item-modal').classList.remove('hidden');
-  uiState = 'pickItem';
-  setPrompt('Choose an item — [Esc] cancel.');
-}
-
-function closeItemModal() {
-  document.getElementById('item-modal').classList.add('hidden');
-}
-
-function pickItem(itemId) {
-  const item = deps.data.item(itemId);
-  if (!item) return;
-  closeItemModal();
-  pendingAction = { kind: 'item', itemId };
-  if (!item.targeting || item.targeting === 'self') {
-    const player = currentCombat.actors.find(a => a.isPlayer);
-    completeTargetPick(player);
-  } else if (['allEnemies', 'allAllies', 'all'].includes(item.targeting)) {
-    resolveAction({ kind: 'item', itemId, targetId: null });
-  } else {
-    enterPickTarget('enemies');
-  }
+  const choices = ids
+    .map((id, i) => {
+      const item = deps.data.item(id);
+      if (!item) return null;
+      return {
+        key: String.fromCharCode(49 + i),
+        label: `${item.name} ×${counts[id]}`,
+        detail: item.blurb || '',
+        className: `school-${item.kind || 'consumable'}`,
+        _itemId: id,
+      };
+    })
+    .filter(Boolean);
+  choices.push({ key: 'L', label: 'CANCEL', isLeave: true });
+  setPrompt('Choose an item — [↑↓] move, [Enter] use, [1-9] direct, [Esc] cancel.');
+  const i = await showNodeModal({ title: 'USE ITEM', flavor: '', choices });
+  const chosen = choices[i];
+  if (!chosen || chosen.isLeave) return null;
+  return chosen._itemId;
 }
 
 // ---------- Row clicks ----------
@@ -506,25 +441,11 @@ function wireRowClicks() {
 // ---------- Keys ----------
 
 function wireKeys() {
-  // Combat owns its own #spell-modal / #item-modal overlays; ignore them in
-  // the screen-key gate so its uiState picker keeps receiving keys.
+  // Spell / item picking go through showNodeModal, which has its own key
+  // handler (capture phase). The screen-key gate naturally yields while
+  // #node-modal is open, so combat keys can't double-fire under the modal.
   wireScreenKeys('combat', deps.activeScreen, (e) => {
     if (e.key === 'Escape') { cancelPick(); return; }
-
-    if (uiState === 'pickSpell') {
-      if (e.key === 'ArrowDown' || e.key === 'j') { e.preventDefault(); moveSpellFocus(1); return; }
-      if (e.key === 'ArrowUp'   || e.key === 'k') { e.preventDefault(); moveSpellFocus(-1); return; }
-      if (e.key === 'Enter' || e.key === ' ')    { e.preventDefault(); confirmFocusedSpell(); return; }
-      const li = document.querySelector(`#spell-list li[data-key="${e.key}"]`);
-      if (li && !li.classList.contains('disabled')) pickSpell(li.dataset.spellId);
-      return;
-    }
-
-    if (uiState === 'pickItem') {
-      const li = document.querySelector(`#item-list li[data-key="${e.key}"]`);
-      if (li) pickItem(li.dataset.itemId);
-      return;
-    }
 
     if (uiState === 'pickTarget') {
       if (e.key === 'ArrowDown' || e.key === 'j') { e.preventDefault(); moveTargetFocus(1); return; }
@@ -553,7 +474,7 @@ function wireKeys() {
       const action = map[e.key.toLowerCase()];
       if (action) handleAction(action);
     }
-  }, { ignoreModals: ['#spell-modal', '#item-modal'] });
+  });
 }
 
 function moveInspectFocus(delta) {

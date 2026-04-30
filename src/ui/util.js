@@ -87,11 +87,11 @@ export function armSwallow(key) {
 
 // Selectors for every modal/overlay surface in the game. Used by
 // isAnyModalOpen so screen-level keys yield while anything is on top.
-const MODAL_SELECTORS = ['#node-modal', '#spell-modal', '#item-modal', '.modal.terminal-modal'];
+const MODAL_SELECTORS = ['#node-modal', '.modal.terminal-modal'];
 
 // `ignore` may contain modal selectors to treat as "owned by" the caller —
-// e.g. combat ignores #spell-modal/#item-modal because those are part of its
-// own keystate machine, not foreign overlays.
+// e.g. a screen with its own overlay can pass them so its key handler keeps
+// receiving keys while the overlay is up.
 export function isAnyModalOpen(ignore) {
   const ignoreSet = ignore instanceof Set ? ignore : new Set(ignore || []);
   for (const sel of MODAL_SELECTORS) {

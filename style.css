@@ -147,9 +147,8 @@ pre {
 .modal-title,
 .menu .key,
 .button-bar .key,
-.spell-list .spell-key,
-.spell-list li.school-exploit .spell-name,
-.spell-list li.school-hybrid .spell-name,
+.modal-choice.school-exploit:not(.focused):not(:hover):not(:disabled),
+.modal-choice.school-hybrid:not(.focused):not(:hover):not(:disabled),
 .combat-row.next .row-marker,
 .row-tick.next,
 .conn-readout.danger .conn-pct {
@@ -872,44 +871,11 @@ button:disabled {
   color: var(--dim);
   font-size: 0.85em;
 }
-.spell-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.spell-list li {
-  padding: 0.1lh 0.5ch;
-  cursor: pointer;
-  display: grid;
-  grid-template-columns: 4ch 1fr 9ch 9ch;
-  gap: 1ch;
-  align-items: baseline;
-}
-.spell-list li.focused:not(.disabled) {
-  background: var(--accent);
-  color: var(--bg-deep);
-  text-shadow: none;
-}
-.spell-list li.focused:not(.disabled) span {
-  color: var(--bg-deep);
-  text-shadow: none;
-}
-.spell-list li.disabled { color: var(--dim); cursor: not-allowed; }
-.spell-list li.disabled .spell-key,
-.spell-list li.disabled .spell-name,
-.spell-list li.disabled .spell-school,
-.spell-list li.disabled .spell-cost {
-  color: var(--dim);
-  text-shadow: none;
-}
-.spell-list .spell-key    { color: var(--accent); }
-.spell-list li.focused:not(.disabled) .spell-key { color: var(--bg-deep); }
-.spell-list .spell-name   { letter-spacing: 0.05em; }
-.spell-list .spell-school { color: var(--fg-dim); font-size: 0.9em; }
-.spell-list li.school-arcane .spell-name  { color: var(--fg); }
-.spell-list li.school-exploit .spell-name { color: var(--accent); }
-.spell-list li.school-hybrid .spell-name  { color: var(--warn); }
-.spell-list .spell-cost   { color: var(--fg-dim); font-size: 0.9em; text-align: right; }
+/* Spell / item picker rows: tint the choice by school. Focus/hover/disabled
+   states already win in the cascade via the .modal-choice rules above, so
+   these only colour the resting state. */
+.modal-choice.school-exploit:not(.focused):not(:hover):not(:disabled) { color: var(--accent); }
+.modal-choice.school-hybrid:not(.focused):not(:hover):not(:disabled)  { color: var(--warn); }
 
 /* utility */
 .hidden { display: none !important; }
