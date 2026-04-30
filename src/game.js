@@ -129,7 +129,9 @@ function wireButtons() {
 
 function wireKeys() {
   window.addEventListener('keydown', (e) => {
-    if (activeScreen() === 'map' && isTyping()) flushLog();
+    // Any keypress on any screen flushes the log strip's typing queue —
+    // matches the equivalent click-anywhere behaviour wired in initLog.
+    if (isTyping()) flushLog();
     if (activeScreen() === 'boot' && state.bootCompleted) {
       const map = { n: 'new-run', c: 'continue', k: 'codex', w: 'wipe', q: 'quit' };
       const action = map[e.key.toLowerCase()];

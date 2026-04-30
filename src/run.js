@@ -11,7 +11,7 @@ import {
 import { setRun as setMapRun, clearRun as clearMapRun, renderMap } from './ui/map.js';
 import { enterCombat } from './ui/combat.js';
 import {
-  showShrine, showCache, showEvent, showShop, showBossIntro, showNodeModal,
+  showShrine, showCache, showEvent, showShop, showBossIntro, showShell, showNodeModal,
 } from './ui/nodes.js';
 import { showTerminalSequence } from './ui/terminal.js';
 import { showScreen } from './screen.js';
@@ -52,7 +52,7 @@ export function startNewRun() {
   setMapRun(state.run);
   showScreen('map');
   renderMap();
-  // Resolve the entry node immediately (it's a combat).
+  // Show the shell-prompt entry; player browses inventory/codex from the map after.
   resolveNode(state.run.map.nodes.get(state.run.map.startId), { entry: true });
 }
 
@@ -165,6 +165,8 @@ export async function resolveNode(node, opts = {}) {
       state.run.player.statuses = [];
       grantCombatTokens(node.type);
       grantCombatLoot(result.finalCombat);
+    } else if (node.type === 'shell') {
+      await showShell(node);
     } else if (node.type === 'shrine') {
       await showShrine(node);
     } else if (node.type === 'cache') {

@@ -64,3 +64,78 @@ export function formatStatLine(actor) {
   return `INT ${effectiveStat(actor, 'int')}  ATK ${effectiveStat(actor, 'atk')}  ` +
          `DEF ${effectiveStat(actor, 'def')}  SPD ${effectiveStat(actor, 'spd')}`;
 }
+
+// Swallow further keydowns of `key` (capture phase, before any screen handler)
+// until the matching keyup fires. Self-cleans on release. Call this from any
+// modal/overlay's dismissal handler so the dismissing keypress can't auto-
+// repeat or leak through to the screen behind it on the same physical press.
+export function armSwallow(key) {
+  function swallow(e) {
+    if (e.key === key) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }
+  function release(e) {
+    if (e.key !== key) return;
+    window.removeEventListener('keydown', swallow, true);
+    window.removeEventListener('keyup', release, true);
+  }
+  window.addEventListener('keydown', swallow, true);
+  window.addEventListener('keyup', release, true);
+}
+
+// Selectors for every modal/overlay surface in the game. Used by
+// isAnyModalOpen so screen-level keys yield while anything is on top.
+const MODAL_SELECTORS = ['#node-modal', '#spell-modal', '#item-modal', '.modal.terminal-modal'];
+
+// `ignore` may contain modal selectors to treat as "owned by" the caller —
+// e.g. combat ignores #spell-modal/#item-modal because those are part of its
+// own keystate machine, not foreign overlays.
+export function isAnyModalOpen(ignore) {
+  const ignoreSet = ignore instanceof Set ? ignore : new Set(ignore || []);
+  for (const sel of MODAL_SELECTORS) {
+    if (ignoreSet.has(sel)) continue;
+    const el = document.querySelector(sel);
+    if (el && !el.classList.contains('hidden')) return true;
+  }
+  return false;
+}
+
+// Install a window-level keydown listener that no-ops unless the named screen
+// is active AND no modal is on top. Centralizes the per-screen guard so
+// individual screens don't each repeat the activeScreen / modal-open check.
+// `opts.ignoreModals`: selectors the caller owns; not treated as foreign.
+export function wireScreenKeys(screenName, getActiveScreen, handler, opts = {}) {
+  const ignore = new Set(opts.ignoreModals || []);
+  window.addEventListener('keydown', (e) => {
+    if (getActiveScreen() !== screenName) return;
+    if (isAnyModalOpen(ignore)) return;
+    handler(e);
+  });
+}
+
+// Match a raw KeyboardEvent.key against a list of {key, disabled?} choices,
+// case-insensitively. Returns the index of the matching enabled choice, or -1.
+export function pickByKey(choices, eventKey) {
+  if (!eventKey) return -1;
+  const k = eventKey.toLowerCase();
+  for (let i = 0; i < choices.length; i++) {
+    const c = choices[i];
+    if (!c?.key) continue;
+    if (c.disabled) continue;
+    if (String(c.key).toLowerCase() === k) return i;
+  }
+  return -1;
+}
+
+// Hide a modal element. Optionally arm-swallows the dismissing key so the
+// same physical press can't leak through to whatever is behind. Pass any
+// extra classes to remove (e.g. shell-modal) to avoid leaking modal-specific
+// state into the next caller.
+export function closeModal(el, { dismissKey = null, removeClasses = [] } = {}) {
+  if (!el) return;
+  el.classList.add('hidden');
+  for (const cls of removeClasses) el.classList.remove(cls);
+  if (dismissKey) armSwallow(dismissKey);
+}

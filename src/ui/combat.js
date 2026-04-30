@@ -7,7 +7,7 @@ import { effectiveStat } from '../engine/atoms.js';
 import { formatSceneString, sceneContextFromCombat } from '../engine/scene.js';
 import { showTerminalSequence } from './terminal.js';
 import { triggerGlitch, corruptName } from './glitch.js';
-import { sleep, escapeHtml, formatSpellCost, countBy, formatStatsBlock, formatStatLine } from './util.js';
+import { sleep, escapeHtml, formatSpellCost, countBy, formatStatsBlock, formatStatLine, armSwallow, wireScreenKeys } from './util.js';
 
 let deps = null;          // { data, rng, log, logFlavor, awaitLogIdle, showScreen, activeScreen, getConn, onConnCost }
 let currentCombat = null;
@@ -176,24 +176,6 @@ function waitForDismiss() {
     window.addEventListener('keydown', onKey, true);
     window.addEventListener('click', onClick, true);
   });
-}
-
-// Swallow further keydowns of `key` (capture phase, before any screen handler)
-// until the corresponding keyup fires. Self-cleans on release.
-function armSwallow(key) {
-  function swallow(e) {
-    if (e.key === key) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-    }
-  }
-  function release(e) {
-    if (e.key !== key) return;
-    window.removeEventListener('keydown', swallow, true);
-    window.removeEventListener('keyup', release, true);
-  }
-  window.addEventListener('keydown', swallow, true);
-  window.addEventListener('keyup', release, true);
 }
 
 // ---------- Engine bridge ----------
@@ -524,8 +506,9 @@ function wireRowClicks() {
 // ---------- Keys ----------
 
 function wireKeys() {
-  window.addEventListener('keydown', (e) => {
-    if (deps.activeScreen() !== 'combat') return;
+  // Combat owns its own #spell-modal / #item-modal overlays; ignore them in
+  // the screen-key gate so its uiState picker keeps receiving keys.
+  wireScreenKeys('combat', deps.activeScreen, (e) => {
     if (e.key === 'Escape') { cancelPick(); return; }
 
     if (uiState === 'pickSpell') {
@@ -570,7 +553,7 @@ function wireKeys() {
       const action = map[e.key.toLowerCase()];
       if (action) handleAction(action);
     }
-  });
+  }, { ignoreModals: ['#spell-modal', '#item-modal'] });
 }
 
 function moveInspectFocus(delta) {

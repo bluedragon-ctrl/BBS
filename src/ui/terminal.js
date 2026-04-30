@@ -3,7 +3,7 @@
 // Used for the boot dial-up, and reusable for in-game events: boss
 // interference, connection drops, restoration, exposition, etc.
 
-import { sleep } from './util.js';
+import { sleep, armSwallow } from './util.js';
 
 const DEFAULTS = {
   theme: 'normal',     // 'normal' | 'alarm' | 'failure' | 'glitch'
@@ -92,14 +92,19 @@ export async function showTerminalSequence(lines, options = {}) {
   // 'press' — wait for any key/click (with a brief delay so the same
   // event that finished the skip doesn't immediately dismiss).
   return new Promise(resolve => {
-    const handler = () => {
-      window.removeEventListener('keydown', handler);
+    const handler = (e) => {
+      window.removeEventListener('keydown', handler, true);
       window.removeEventListener('click', handler);
+      if (e && e.type === 'keydown') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        armSwallow(e.key);
+      }
       if (modal) modal.classList.add('hidden');
       resolve();
     };
     setTimeout(() => {
-      window.addEventListener('keydown', handler);
+      window.addEventListener('keydown', handler, true);
       window.addEventListener('click', handler);
     }, 50);
   });

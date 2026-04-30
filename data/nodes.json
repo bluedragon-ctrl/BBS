@@ -1,8 +1,20 @@
 [
   {
+    "id": "scene_shell_prompt",
+    "level": 1,
+    "match": { "type": "shell", "layer": 0 },
+    "scene": {
+      "room": [
+        "  ____ ____  ___ __  __ ____   ___  _   _      __        __ __   __  ____   __  __\n / ___|  _ \\|_ _|  \\/  / ___| / _ \\| \\ | |     \\ \\      / / \\ \\ / / |  _ \\ |  \\/  |\n| |   | |_) || || |\\/| \\___ \\| | | |  \\| |      \\ \\ /\\ / /   \\ V /  | |_) || |\\/| |\n| |___|  _ < | || |  | |___) | |_| | |\\  | _     \\ V  V /     | |   |  _ < | |  | |\n \\____|_| \\_\\___|_|  |_|____/ \\___/|_| \\_|(_)     \\_/\\_/      |_|   |_| \\_\\|_|  |_|\n\n> A fantasy game. v0.1\n> Adventure awaits.",
+        "  ____ ____  ___ __  __ ____   ___  _   _      __        __ __   __  ____   __  __\n / ___|  _ \\|_ _|  \\/  / ___| / _ \\| \\ | |     \\ \\      / / \\ \\ / / |  _ \\ |  \\/  |\n| |   | |_) || || |\\/| \\___ \\| | | |  \\| |      \\ \\ /\\ / /   \\ V /  | |_) || |\\/| |\n| |___|  _ < | || |  | |___) | |_| | |\\  | _     \\ V  V /     | |   |  _ < | |  | |\n \\____|_| \\_\\___|_|  |_|____/ \\___/|_| \\_|(_)     \\_/\\_/      |_|   |_| \\_\\|_|  |_|\n\n> A fantasy game. v0.1\n> The realm calls. Steel yourself.",
+        "  ____ ____  ___ __  __ ____   ___  _   _      __        __ __   __  ____   __  __\n / ___|  _ \\|_ _|  \\/  / ___| / _ \\| \\ | |     \\ \\      / / \\ \\ / / |  _ \\ |  \\/  |\n| |   | |_) || || |\\/| \\___ \\| | | |  \\| |      \\ \\ /\\ / /   \\ V /  | |_) || |\\/| |\n| |___|  _ < | || |  | |___) | |_| | |\\  | _     \\ V  V /     | |   |  _ < | |  | |\n \\____|_| \\_\\___|_|  |_|____/ \\___/|_| \\_|(_)     \\_/\\_/      |_|   |_| \\_\\|_|  |_|\n\n> A fantasy game. v0.1\n> A road forks ahead. Choose well."
+      ]
+    }
+  },
+  {
     "id": "scene_entry_forest_path",
     "level": 1,
-    "match": { "type": "combat", "layer": 0 },
+    "match": { "type": "combat", "layer": 1 },
     "scene": {
       "room": [
         "The forest path narrows into shadow. Twisted roots cross the trail and the air smells of damp moss and old smoke.",
@@ -24,7 +36,7 @@
   {
     "id": "scene_entry_ruined_arch",
     "level": 1,
-    "match": { "type": "combat", "layer": 0 },
+    "match": { "type": "combat", "layer": 1 },
     "scene": {
       "room": [
         "A ruined stone archway, half-swallowed by ivy. The keystone bears a sigil — a stag and tower — worn nearly smooth.",
@@ -44,7 +56,7 @@
   {
     "id": "scene_entry_marsh_edge",
     "level": 1,
-    "match": { "type": "combat", "layer": 0 },
+    "match": { "type": "combat", "layer": 1 },
     "scene": {
       "room": [
         "The trail dips into a sour-smelling marsh. Reeds taller than a man flank the only passable path.",

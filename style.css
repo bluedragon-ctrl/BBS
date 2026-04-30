@@ -706,6 +706,13 @@ button:disabled {
   color: var(--fg-dim);
   white-space: pre-wrap;
 }
+#node-modal.shell-modal .modal-frame {
+  max-width: 100ch;
+}
+#node-modal.shell-modal .modal-body {
+  white-space: pre;
+  overflow-x: auto;
+}
 #node-modal .modal-actions {
   display: flex;
   flex-direction: column;

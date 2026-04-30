@@ -2,7 +2,7 @@
 
 import { NODE_GLYPH, NODE_LABEL, NODE_FLAVOR } from '../engine/map.js';
 import { formatSceneString, sceneContextFromNode } from '../engine/scene.js';
-import { formatStatsBlock, formatEquippedSlots, escapeHtml } from './util.js';
+import { formatStatsBlock, formatEquippedSlots, escapeHtml, wireScreenKeys } from './util.js';
 
 let deps = null;
 let run = null;             // shared run state object from game.js
@@ -287,8 +287,8 @@ function handleAction(action) {
 }
 
 function wireKeys() {
-  window.addEventListener('keydown', (e) => {
-    if (deps.activeScreen() !== 'map' || !run) return;
+  wireScreenKeys('map', deps.activeScreen, (e) => {
+    if (!run) return;
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'j' || e.key === 'l') {
       moveFocus(1); e.preventDefault(); return;
     }

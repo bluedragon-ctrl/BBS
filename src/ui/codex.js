@@ -2,7 +2,7 @@
 // Reads from engine/codex.js (persistent across runs) + data tables.
 
 import { isKnown, knownIds, summary } from '../engine/codex.js';
-import { escapeHtml, formatSpellCost, formatStatLine } from './util.js';
+import { escapeHtml, formatSpellCost, formatStatLine, wireScreenKeys } from './util.js';
 
 let deps = null;            // { data, activeScreen, returnTo }
 let currentTab = 'monsters';
@@ -319,8 +319,7 @@ function wireButtons() {
 }
 
 function wireKeys() {
-  window.addEventListener('keydown', (e) => {
-    if (deps.activeScreen() !== 'codex') return;
+  wireScreenKeys('codex', deps.activeScreen, (e) => {
     if (e.key === 'Escape') { closeCodex(); e.preventDefault(); return; }
     if (e.key === 'Tab')    { nextTab(e.shiftKey ? -1 : 1); e.preventDefault(); return; }
     if (e.key === 'ArrowDown' || e.key === 'j') { moveFocus(1); e.preventDefault(); return; }

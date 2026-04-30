@@ -8,7 +8,7 @@ import {
   SLOTS, equipItem, unequipSlot, bagFittingSlot, equippedDef, emptyEquipped,
 } from '../engine/loadout.js';
 import { showNodeModal } from './nodes.js';
-import { escapeHtml } from './util.js';
+import { escapeHtml, wireScreenKeys } from './util.js';
 
 let deps = null;
 // deps = { data, activeScreen, showScreen, getRun, persistRun, log }
@@ -345,12 +345,7 @@ function wireButtons() {
 }
 
 function wireKeys() {
-  window.addEventListener('keydown', (e) => {
-    if (deps.activeScreen() !== 'inventory') return;
-    // If a modal is open the modal's own key handler runs first; we still need
-    // to allow Esc to close the modal but not the screen prematurely.
-    const modalOpen = !document.getElementById('node-modal')?.classList.contains('hidden');
-    if (modalOpen) return;
+  wireScreenKeys('inventory', deps.activeScreen, (e) => {
     if (e.key === 'Escape') { closeInventory(); e.preventDefault(); return; }
     if (e.key === 'ArrowDown' || e.key === 'j') { moveFocus(1); e.preventDefault(); return; }
     if (e.key === 'ArrowUp'   || e.key === 'k') { moveFocus(-1); e.preventDefault(); return; }
