@@ -179,8 +179,10 @@ function resolveSceneVariants(scene, rng) {
 
 // Per-layer combat recipes. Layer index matches map layer (0 = entry, last = boss).
 // Each entry is a list of recipes; one is picked at random for the node.
-// Act 1 occupies layers 0..3 (entry forest → goblin warrens → crypts → dragon's lair).
-// Layers 4+ fall back to existing test monsters until Act 2 content lands.
+// Act 1 narrative zones: Borderwood (L1) → Warrens (L2) → Crypts (L3-L5) →
+// Hoard (L6 boss). The 7-layer scaffold has more mid layers than Act 1 has
+// distinct zones, so L4-L5 reuse the L3 Crypts pool — "deeper crypts" — until
+// the proper map-structure refactor lands.
 const COMBAT_RECIPES = {
   0: [
     ['mon_cave_rat', 'mon_cave_rat'],
@@ -206,11 +208,29 @@ const COMBAT_RECIPES = {
     ['mon_acidic_ooze', 'mon_crypt_ghoul'],
     ['mon_acidic_ooze', 'mon_bone_walker', 'mon_bone_walker'],
   ],
+  4: [
+    ['mon_bone_walker', 'mon_crypt_ghoul'],
+    ['mon_acidic_ooze', 'mon_crypt_ghoul'],
+    ['mon_acidic_ooze', 'mon_bone_walker', 'mon_bone_walker'],
+    ['mon_crypt_ghoul', 'mon_crypt_ghoul'],
+  ],
+  5: [
+    ['mon_bone_walker', 'mon_crypt_ghoul', 'mon_crypt_ghoul'],
+    ['mon_acidic_ooze', 'mon_acidic_ooze'],
+    ['mon_bone_walker', 'mon_bone_walker', 'mon_acidic_ooze'],
+  ],
 };
 
-// Per-layer elite recipes. Goblin Chief is Act 1's L3 elite (mini-boss).
+// Per-layer elite recipes. Goblin Chief is Act 1's only authored elite; reused
+// across L3-L5 to cover any layer where the weights table allows elites.
 const ELITE_RECIPES = {
   3: [
+    ['mon_goblin_chief'],
+  ],
+  4: [
+    ['mon_goblin_chief'],
+  ],
+  5: [
     ['mon_goblin_chief'],
   ],
 };
