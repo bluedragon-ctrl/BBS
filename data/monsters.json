@@ -232,7 +232,7 @@
       {"name": "claws", "weight": 1, "condition": "self.actionCount % 3 !== 2",
        "effects": [{"type": "damage", "target": "target", "amount": "1d4+ATK", "damageType": "physical"}]},
       {"name": "feasts on", "weight": 1, "condition": "self.actionCount % 3 === 2",
-       "effects": [{"type": "damage", "target": "target", "amount": "5+ATK", "damageType": "physical", "lifesteal": 1.0}]}
+       "effects": [{"type": "damage", "target": "target", "amount": "5+ATK", "damageType": "physical", "lifesteal": 0.5}]}
     ],
     "loot": [],
     "barks": {
