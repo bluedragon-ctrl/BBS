@@ -9,7 +9,7 @@
     "blurb": "A red glass vial. Tastes of iron and willow.",
     "targeting": "self",
     "effects": [
-      { "type": "heal", "target": "self", "amount": "1d6+4" }
+      { "type": "heal", "target": "self", "amount": "2d6+4" }
     ]
   },
   {
@@ -61,7 +61,7 @@
     "blurb": "A heavier vial of healing draught. Sweet and a little metallic.",
     "targeting": "self",
     "effects": [
-      { "type": "heal", "target": "self", "amount": "1d6+10" }
+      { "type": "heal", "target": "self", "amount": "2d6+10" }
     ]
   },
   {
