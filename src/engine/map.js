@@ -15,26 +15,30 @@ export const NODE_GLYPH = {
   boss:    '[★]',
 };
 
+// Generic per-type fallback labels. Scene templates can override via an
+// optional `scene.label` field, which is preferred whenever set.
 export const NODE_LABEL = {
   shell:   'SHELL PROMPT',
-  combat:  'COMBAT NODE',
-  shop:    'SHOP',
+  combat:  'COMBAT',
+  shop:    'TRADER',
   cache:   'CACHE',
-  shrine:  'SHRINE',
-  event:   'EVENT',
-  elite:   'ELITE COMBAT',
-  boss:    'SYSOP',
+  shrine:  'ALTAR',
+  event:   'ENCOUNTER',
+  elite:   'ELITE',
+  boss:    'BOSS',
 };
 
+// Generic per-type fallback flavor. Scene `room` overrides whenever set;
+// these only show on legacy nodes that have no scene attached.
 export const NODE_FLAVOR = {
-  shell:   'The shell prompt. Adventure awaits.',
-  combat:  'A hostile process. Resolve by combat.',
-  shop:    'A node selling odd files. Spend tokens.',
-  cache:   'A directory of dropped files — most encrypted, some readable.',
-  shrine:  'A pocket of static calm. Restoration.',
+  shell:   'The starting glade. Press onward.',
+  combat:  'A hostile encounter. Resolve by combat.',
+  shop:    'A wayside trader. Spend tokens.',
+  cache:   'A hidden stash — old goods, half-perished.',
+  shrine:  'A pocket of quiet. An old altar, kept warm.',
   event:   'Something irregular. Outcome uncertain.',
-  elite:   'Heavy traffic. Stronger encounter.',
-  boss:    'The SYSOP itself. End of run.',
+  elite:   'Stronger quarry. The path narrows.',
+  boss:    "The lair at the heart of the kingdom. End of run.",
 };
 
 const LAYERS = 7;                          // 0..6
@@ -130,7 +134,12 @@ function pickScene(templates, node, rng) {
   }, 0);
   const tier = matches.filter(t => (t.match?.layer != null ? 1 : 0) === maxSpecificity);
   const pick = tier[Math.floor(rng() * tier.length)];
-  return resolveSceneVariants(pick.scene, rng);
+  const resolved = resolveSceneVariants(pick.scene, rng);
+  // Template-level fields (label etc.) propagate onto the resolved scene so
+  // downstream consumers (map UI inspect, modal titles) can read them off
+  // node.scene.label without reaching back to the template.
+  if (pick.label) resolved.label = pick.label;
+  return resolved;
 }
 
 // room/pre/post may each be a string or an array of strings. Arrays are

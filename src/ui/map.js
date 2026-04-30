@@ -87,14 +87,13 @@ function renderMainPane() {
     view.appendChild(prevCell);
   }
 
-  // YOU on the left (spans all rows)
+  // YOU on the left (spans all rows). Player is always YOU — even at the
+  // boss layer the label belongs to the destination, not the player marker.
   const youCell = document.createElement('div');
   youCell.className = 'map-current';
   youCell.setAttribute('data-glitchable', '');
-  const isBoss = cur.type === 'boss';
-  youCell.innerHTML = isBoss
-    ? `<span class="you-marker">▶</span><span class="you-label">SYSOP</span><span class="you-marker">◀</span>`
-    : `<span class="you-marker">▶</span><span class="you-label">YOU</span><span class="you-marker">◀</span>`;
+  youCell.innerHTML =
+    `<span class="you-marker">▶</span><span class="you-label">YOU</span><span class="you-marker">◀</span>`;
   view.appendChild(youCell);
 
   // Edges block — multi-line `<pre>` with right-angle box drawing chars
@@ -177,10 +176,24 @@ function renderEdgeBlock(N, anchor, focusedIdx) {
 
 function renderEndArt(node) {
   if (node.type === 'boss') {
+    // Title is derived from the boss encounter — "T H E   C R I M S O N   W Y R M"
+    // for Act 1, "T H E   S Y S O P" for Act 2, etc. Centered in a 31-char banner.
+    const bossId = node.encounter?.enemyIds?.[0];
+    const bossName = (bossId && deps.data?.monster(bossId)?.name) || 'BOSS';
+    const spaced = bossName.toUpperCase().split('').join(' ');
+    const title = `T H E   ${spaced}`;
+    const width = 31;
+    const fits = title.length <= width;
+    const padTotal = Math.max(0, width - title.length);
+    const padLeft  = Math.floor(padTotal / 2);
+    const padRight = padTotal - padLeft;
+    const line = fits
+      ? ' '.repeat(padLeft) + title + ' '.repeat(padRight)
+      : title.slice(0, width);
     return [
       '┌───────────────────────────────┐',
       '│                               │',
-      '│         T H E   S Y S O P     │',
+      `│${line}│`,
       '│                               │',
       '└───────────────────────────────┘',
       '',
@@ -212,7 +225,7 @@ function renderInspect() {
     body.textContent = '(no choices)';
     return;
   }
-  const label = NODE_LABEL[focused.type] || focused.type.toUpperCase();
+  const label = focused.scene?.label || NODE_LABEL[focused.type] || focused.type.toUpperCase();
   const ctx = sceneContextFromNode(focused, deps.data);
   const rawRoom = focused.scene?.room || NODE_FLAVOR[focused.type] || '';
   const room = formatSceneString(rawRoom, ctx);
