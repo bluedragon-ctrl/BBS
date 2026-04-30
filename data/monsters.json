@@ -308,7 +308,10 @@
       {"name": "lays a heavy blow on", "weight": 1,
        "effects": [{"type": "damage", "target": "target", "amount": "1d6+ATK", "damageType": "physical"}]}
     ],
-    "loot": [],
+    "loot": [
+      "itm_iron_sword",
+      { "id": "itm_greater_potion", "chance": 0.5 }
+    ],
     "barks": {
       "onSpawn": [
         "THE CROWN IS MINE BY RIGHT.",

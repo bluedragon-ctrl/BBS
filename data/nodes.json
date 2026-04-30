@@ -2,6 +2,7 @@
   {
     "id": "scene_shell_prompt",
     "level": 1,
+    "label": "SHELL PROMPT",
     "match": { "type": "shell", "layer": 0 },
     "scene": {
       "room": [
@@ -14,6 +15,7 @@
   {
     "id": "scene_entry_forest_path",
     "level": 1,
+    "label": "BORDERWOOD — FOREST PATH",
     "match": { "type": "combat", "layer": 1 },
     "scene": {
       "room": [
@@ -36,6 +38,7 @@
   {
     "id": "scene_entry_ruined_arch",
     "level": 1,
+    "label": "BORDERWOOD — RUINED ARCH",
     "match": { "type": "combat", "layer": 1 },
     "scene": {
       "room": [
@@ -56,6 +59,7 @@
   {
     "id": "scene_entry_marsh_edge",
     "level": 1,
+    "label": "BORDERWOOD — MARSH EDGE",
     "match": { "type": "combat", "layer": 1 },
     "scene": {
       "room": [
@@ -77,6 +81,7 @@
   {
     "id": "scene_goblin_camp",
     "level": 1,
+    "label": "WARRENS — GOBLIN CAMP",
     "match": { "type": "combat", "layer": 2 },
     "scene": {
       "room": [
@@ -98,6 +103,7 @@
   {
     "id": "scene_warrens_cottage",
     "level": 1,
+    "label": "WARRENS — RUINED COTTAGE",
     "match": { "type": "combat", "layer": 2 },
     "scene": {
       "room": [
@@ -119,6 +125,7 @@
   {
     "id": "scene_warrens_palisade",
     "level": 1,
+    "label": "WARRENS — PALISADE",
     "match": { "type": "combat", "layer": 2 },
     "scene": {
       "room": [
@@ -141,6 +148,7 @@
   {
     "id": "scene_crypts_gallery",
     "level": 1,
+    "label": "CRYPTS — TOMB GALLERY",
     "match": { "type": "combat", "layer": 3 },
     "scene": {
       "room": [
@@ -162,6 +170,7 @@
   {
     "id": "scene_crypts_vault",
     "level": 1,
+    "label": "CRYPTS — SUNKEN VAULT",
     "match": { "type": "combat", "layer": 3 },
     "scene": {
       "room": [
@@ -183,6 +192,7 @@
   {
     "id": "scene_crypts_workshop",
     "level": 1,
+    "label": "CRYPTS — ALCHEMIST'S WORKSHOP",
     "match": { "type": "combat", "layer": 3 },
     "scene": {
       "room": [
@@ -205,6 +215,7 @@
   {
     "id": "scene_chief_court",
     "level": 1,
+    "label": "CRYPTS — CHIEF'S COURT",
     "match": { "type": "elite", "layer": 3 },
     "scene": {
       "room": [
@@ -227,6 +238,7 @@
   {
     "id": "scene_dragon_lair",
     "level": 1,
+    "label": "THE HOARD",
     "match": { "type": "boss" },
     "scene": {
       "room": [
@@ -249,6 +261,7 @@
   {
     "id": "scene_borderwood_shrine",
     "level": 1,
+    "label": "BORDERWOOD — WAYSIDE ALTAR",
     "match": { "type": "shrine", "layer": 1 },
     "scene": {
       "room": [
@@ -260,6 +273,7 @@
   {
     "id": "scene_warrens_shrine",
     "level": 1,
+    "label": "WARRENS — DEFACED ALTAR",
     "match": { "type": "shrine", "layer": 2 },
     "scene": {
       "room": [
@@ -271,6 +285,7 @@
   {
     "id": "scene_crypts_shrine",
     "level": 1,
+    "label": "CRYPTS — TOMB CHAPEL",
     "match": { "type": "shrine", "layer": 3 },
     "scene": {
       "room": [
@@ -283,6 +298,7 @@
   {
     "id": "scene_borderwood_cache",
     "level": 1,
+    "label": "BORDERWOOD — FORESTER'S CACHE",
     "match": { "type": "cache", "layer": 1 },
     "scene": {
       "room": [
@@ -294,6 +310,7 @@
   {
     "id": "scene_warrens_cache",
     "level": 1,
+    "label": "WARRENS — GOBLIN LOOT",
     "match": { "type": "cache", "layer": 2 },
     "scene": {
       "room": [
@@ -305,6 +322,7 @@
   {
     "id": "scene_crypts_cache",
     "level": 1,
+    "label": "CRYPTS — VAULT SALVAGE",
     "match": { "type": "cache", "layer": 3 },
     "scene": {
       "room": [
@@ -317,6 +335,7 @@
   {
     "id": "scene_borderwood_shop",
     "level": 1,
+    "label": "BORDERWOOD — HERMIT'S WAGON",
     "match": { "type": "shop", "layer": 1 },
     "scene": {
       "room": [
@@ -328,6 +347,7 @@
   {
     "id": "scene_warrens_shop",
     "level": 1,
+    "label": "WARRENS — ROADWARDEN",
     "match": { "type": "shop", "layer": 2 },
     "scene": {
       "room": [
@@ -339,6 +359,7 @@
   {
     "id": "scene_crypts_shop",
     "level": 1,
+    "label": "CRYPTS — DARING SCHOLAR",
     "match": { "type": "shop", "layer": 3 },
     "scene": {
       "room": [
