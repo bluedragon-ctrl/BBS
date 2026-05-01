@@ -48,7 +48,7 @@ export function makePlayerActor(opts = {}) {
     team: 'player',
     isPlayer: true,
     defId: null,
-    stats: opts.stats || { hp: 30, maxHp: 30, mp: 12, maxMp: 12, int: 5, atk: 4, def: 2, spd: 10 },
+    stats: opts.stats || { hp: 30, maxHp: 30, mp: 15, maxMp: 15, int: 5, atk: 4, def: 2, spd: 10 },
     statuses: [],
     energy: 0,
     actionCount: 0,
