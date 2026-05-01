@@ -9,7 +9,7 @@
     "blurb": "A red glass vial. Tastes of iron and willow.",
     "targeting": "self",
     "effects": [
-      { "type": "heal", "target": "self", "amount": "2d6+4" }
+      { "type": "heal", "target": "self", "amount": "2d6+8" }
     ]
   },
   {
