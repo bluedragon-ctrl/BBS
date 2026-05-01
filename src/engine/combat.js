@@ -67,7 +67,7 @@ export function makePlayerActor(opts = {}) {
       }
       return {
         spells: [...starterSpells, ...unlockedSpells],
-        consumables: ['itm_heal_run', 'itm_restore_run'],
+        consumables: ['itm_heal_run', 'itm_heal_run', 'itm_restore_run'],
         wearables: [...unlockedWearables],
         equipped,
       };
