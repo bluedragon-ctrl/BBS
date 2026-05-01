@@ -336,7 +336,7 @@
     "id": "mon_crimson_wyrm",
     "name": "CRIMSON WYRM",
     "level": 1,
-    "stats": {"hp": 60, "maxHp": 60, "mp": 0, "maxMp": 0, "spd": 10, "def": 3, "int": 4, "atk": 6},
+    "stats": {"hp": 60, "maxHp": 60, "mp": 0, "maxMp": 0, "spd": 10, "def": 3, "int": 4, "atk": 5},
     "ascii": [
       "        ___           ",
       "     _-(   )-_        ",

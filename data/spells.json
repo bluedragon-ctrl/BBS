@@ -8,7 +8,7 @@
     "cost": {"mp": 2},
     "targeting": "single",
     "effects": [
-      {"type": "damage", "target": "target", "amount": "1d8+INT", "damageType": "magical"}
+      {"type": "damage", "target": "target", "amount": "2d4+INT", "damageType": "magical"}
     ],
     "codexBlurb": "A thin dart of mana. Cheap, reliable, taught to every apprentice."
   },
@@ -34,7 +34,7 @@
     "cost": {"mp": 3},
     "targeting": "self",
     "effects": [
-      {"type": "heal", "target": "self", "amount": "2d6+INT"}
+      {"type": "heal", "target": "self", "amount": "3d4+INT"}
     ],
     "codexBlurb": "Knit flesh with phosphor light. The first stitch in any spellbook — strong as the will behind it."
   },
