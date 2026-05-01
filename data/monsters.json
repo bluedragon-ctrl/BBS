@@ -336,7 +336,7 @@
     "id": "mon_crimson_wyrm",
     "name": "CRIMSON WYRM",
     "level": 1,
-    "stats": {"hp": 80, "maxHp": 80, "mp": 0, "maxMp": 0, "spd": 10, "def": 4, "int": 4, "atk": 6},
+    "stats": {"hp": 60, "maxHp": 60, "mp": 0, "maxMp": 0, "spd": 10, "def": 3, "int": 4, "atk": 6},
     "ascii": [
       "        ___           ",
       "     _-(   )-_        ",
@@ -381,7 +381,7 @@
       {"name": "vomits white-hot flame across", "weight": 1,
        "condition": "self.statuses.some(s => s.def.id === 'enraged') && self.actionCount % 2 === 0",
        "effects": [
-         {"type": "damage", "target": "target", "amount": "1d6+5", "damageType": "magical"},
+         {"type": "damage", "target": "target", "amount": "1d4+5", "damageType": "magical"},
          {"type": "applyStatus", "effect": "burn", "target": "target", "duration": 3}
        ]}
     ],
