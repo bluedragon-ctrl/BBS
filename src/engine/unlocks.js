@@ -4,13 +4,18 @@
 // contained it. Subsequent runs start with these in the spellbook / inventory.
 
 const KEY = 'netromancer.unlocks';
-const VERSION = 1;
+const VERSION = 2;
 const CATEGORIES = ['spells', 'wearables'];
+const EQUIP_SLOTS = ['weapon', 'robe', 'amulet', 'ring1', 'ring2'];
 
 let unlocks = empty();
 
+function emptyEquipped() {
+  return { weapon: null, robe: null, amulet: null, ring1: null, ring2: null };
+}
+
 function empty() {
-  const u = { version: VERSION };
+  const u = { version: VERSION, equipped: emptyEquipped() };
   for (const k of CATEGORIES) u[k] = new Set();
   return u;
 }
@@ -20,12 +25,22 @@ export function loadUnlocks() {
     const raw = localStorage.getItem(KEY);
     if (!raw) { unlocks = empty(); return unlocks; }
     const parsed = JSON.parse(raw);
-    if (parsed.version !== VERSION) { unlocks = empty(); return unlocks; }
+    // v1 → v2 migration: keep unlocked sets, default equipped map empty.
+    if (parsed.version !== 1 && parsed.version !== VERSION) {
+      unlocks = empty(); return unlocks;
+    }
     unlocks = empty();
     for (const k of CATEGORIES) {
       const arr = Array.isArray(parsed[k]) ? parsed[k] : [];
       unlocks[k] = new Set(arr);
     }
+    if (parsed.equipped && typeof parsed.equipped === 'object') {
+      for (const slot of EQUIP_SLOTS) {
+        const v = parsed.equipped[slot];
+        if (typeof v === 'string') unlocks.equipped[slot] = v;
+      }
+    }
+    if (parsed.version !== VERSION) persist(); // upgrade in place
     return unlocks;
   } catch {
     unlocks = empty();
@@ -35,7 +50,7 @@ export function loadUnlocks() {
 
 function persist() {
   try {
-    const out = { version: VERSION };
+    const out = { version: VERSION, equipped: { ...unlocks.equipped } };
     for (const k of CATEGORIES) out[k] = Array.from(unlocks[k]);
     localStorage.setItem(KEY, JSON.stringify(out));
   } catch (e) {
@@ -58,6 +73,17 @@ export function isUnlocked(category, id) {
 
 export function getUnlocked(category) {
   return Array.from(unlocks[category] ?? []);
+}
+
+export function getEquippedMemory() {
+  return { ...unlocks.equipped };
+}
+
+export function setEquippedSlot(slot, id) {
+  if (!EQUIP_SLOTS.includes(slot)) return;
+  if (unlocks.equipped[slot] === id) return;
+  unlocks.equipped[slot] = id || null;
+  persist();
 }
 
 export function bankLoadout(loadout) {

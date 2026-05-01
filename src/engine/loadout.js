@@ -10,6 +10,7 @@
 
 import { fireHooks } from './atoms.js';
 import { markKnown } from './codex.js';
+import { setEquippedSlot } from './unlocks.js';
 
 export const SLOTS = ['weapon', 'robe', 'amulet', 'ring1', 'ring2'];
 
@@ -79,6 +80,8 @@ export function equipItem(player, itemId, slot, ctx) {
     fireHooks(player, 'onApply', ctx);
   }
 
+  if (player.isPlayer) setEquippedSlot(slot, itemId);
+
   return true;
 }
 
@@ -92,6 +95,7 @@ export function unequipSlot(player, slot, ctx) {
     fireHooks(player, 'onRemove', ctx);
   }
   player.loadout.equipped[slot] = null;
+  if (player.isPlayer) setEquippedSlot(slot, null);
   return true;
 }
 

@@ -8,7 +8,7 @@ import {
 import { evalExpr } from './expr.js';
 import { weightedPick } from './rng.js';
 import { markKnown } from './codex.js';
-import { getUnlocked } from './unlocks.js';
+import { getUnlocked, getEquippedMemory } from './unlocks.js';
 import {
   advanceTick, actorsThatCanAct, consumeAction, isAlive,
   ENERGY_THRESHOLD,
@@ -58,11 +58,18 @@ export function makePlayerActor(opts = {}) {
       const starterSpells = ['spl_missile', 'spl_mend'];
       const unlockedSpells = getUnlocked('spells').filter(id => !starterSpells.includes(id));
       const unlockedWearables = getUnlocked('wearables');
+      const bag = new Set(unlockedWearables);
+      const memory = getEquippedMemory();
+      const equipped = { weapon: null, robe: null, amulet: null, ring1: null, ring2: null };
+      for (const slot of Object.keys(equipped)) {
+        const id = memory[slot];
+        if (id && bag.has(id)) equipped[slot] = id;
+      }
       return {
         spells: [...starterSpells, ...unlockedSpells],
         consumables: ['itm_heal_run', 'itm_restore_run'],
         wearables: [...unlockedWearables],
-        equipped: { weapon: null, robe: null, amulet: null, ring1: null, ring2: null },
+        equipped,
       };
     })(),
   };
