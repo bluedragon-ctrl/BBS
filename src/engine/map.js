@@ -54,7 +54,7 @@ const LAYER_WEIGHTS_L1 = [
   /* layer 2 */ { combat: 3, event: 1, shop: 1 },
   /* layer 3 */ { combat: 3, shop: 1, shrine: 1, event: 1 },
   /* layer 4 */ { combat: 2, shop: 1, shrine: 1, elite: 1, event: 1 },
-  /* layer 5 */ { combat: 2, elite: 2, shop: 1, shrine: 1 },
+  /* layer 5 */ { combat: 2, elite: 2, shrine: 1 },
 ];
 
 const LAYER_WEIGHTS_L2 = [

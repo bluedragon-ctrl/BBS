@@ -170,11 +170,10 @@
     "stackMode": "refresh",
     "duration": -1,
     "modifiers": [
-      {"stat": "atk", "add": 2},
-      {"stat": "spd", "mult": 1.2}
+      {"stat": "atk", "add": 2}
     ],
     "hooks": {},
-    "codexBlurb": "Past pain. Past reason. Twice the swing, twice the speed."
+    "codexBlurb": "Past pain. Past reason. Twice the swing."
   },
   {
     "id": "burn",
