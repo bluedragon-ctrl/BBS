@@ -187,7 +187,7 @@
     "modifiers": [],
     "hooks": {
       "onTurnStart": [
-        {"type": "damage", "target": "self", "amount": "1d4", "ignoresDef": true, "damageType": "magical"}
+        {"type": "damage", "target": "self", "amount": "1d3", "ignoresDef": true, "damageType": "magical"}
       ]
     },
     "codexBlurb": "Robes catching, hair singeing — flame eats at the edges of you."
