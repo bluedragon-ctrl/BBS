@@ -1,7 +1,7 @@
 // Suspend save — single slot, wipes on load. Backed by localStorage.
 
 const SAVE_KEY = 'netromancer.save';
-const VERSION  = 1;
+const VERSION  = 2;
 
 export function hasSave() {
   try { return !!localStorage.getItem(SAVE_KEY); }

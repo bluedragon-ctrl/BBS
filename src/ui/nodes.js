@@ -6,7 +6,7 @@ import { weightedPick, pick } from '../engine/rng.js';
 import { evalExpr } from '../engine/expr.js';
 import { markKnown } from '../engine/codex.js';
 import { isUnlocked } from '../engine/unlocks.js';
-import { addWearable } from '../engine/loadout.js';
+import { addWearable, addItem } from '../engine/loadout.js';
 import { showTerminalSequence } from './terminal.js';
 import { sleep, escapeHtml, formatTokens, countBy, pickByKey, closeModal } from './util.js';
 
@@ -506,12 +506,12 @@ export async function showShop(node) {
   let lastFeedback = null; // { text, kind } shown inside the modal next iteration
 
   function inventoryLine() {
-    const list = run.player.loadout.consumables || [];
-    if (!list.length) return '';
-    const counts = countBy(list);
-    const parts = Object.entries(counts).map(([id, n]) => {
+    const bag = run.player.loadout.consumables || {};
+    const ids = Object.keys(bag);
+    if (!ids.length) return '';
+    const parts = ids.map((id) => {
       const it = deps.data.item(id);
-      return `${it ? it.name : id}×${n}`;
+      return `${it ? it.name : id}×${bag[id]}`;
     });
     return `\nOWNED: ${parts.join('  ')}`;
   }
@@ -540,8 +540,8 @@ export async function showShop(node) {
     }
     run.tokens -= chosen.cost;
     if (chosen.kind === 'consumable') {
-      run.player.loadout.consumables = run.player.loadout.consumables || [];
-      run.player.loadout.consumables.push(chosen.id);
+      run.player.loadout.consumables ||= {};
+      addItem(run.player.loadout.consumables, chosen.id);
       markKnown('consumables', chosen.id);
     } else if (chosen.kind === 'wearable') {
       addWearable(run.player, chosen.id);

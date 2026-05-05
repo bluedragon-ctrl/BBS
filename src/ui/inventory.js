@@ -53,7 +53,7 @@ function getPlayer() {
 }
 
 function ensureLoadout(player) {
-  if (!player.loadout) player.loadout = { spells: [], consumables: [], wearables: [], equipped: emptyEquipped() };
+  if (!player.loadout) player.loadout = { spells: [], consumables: {}, wearables: [], equipped: emptyEquipped() };
   if (!player.loadout.equipped) player.loadout.equipped = emptyEquipped();
   if (!player.loadout.wearables) player.loadout.wearables = [];
 }

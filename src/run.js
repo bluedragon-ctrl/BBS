@@ -2,7 +2,7 @@
 
 import { makeRng, randomSeed } from './engine/rng.js';
 import { makePlayerActor } from './engine/combat.js';
-import { addWearable } from './engine/loadout.js';
+import { addWearable, addItem } from './engine/loadout.js';
 import { generateMap, NODE_LABEL, NODE_FLAVOR } from './engine/map.js';
 import {
   hasSave, save as saveSlot, load as loadSlot, wipe as wipeSave,
@@ -260,7 +260,8 @@ function grantCombatLoot(combat) {
           logMessage(`> ${actor.name} dropped ${item.name}.`);
         }
       } else if (item.kind === 'consumable') {
-        state.run.player.loadout.consumables.push(id);
+        state.run.player.loadout.consumables ||= {};
+        addItem(state.run.player.loadout.consumables, id);
         logMessage(`> ${actor.name} dropped ${item.name}.`);
       }
     }
