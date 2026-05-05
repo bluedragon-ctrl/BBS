@@ -13,6 +13,7 @@ import {
   advanceTick, actorsThatCanAct, consumeAction, isAlive,
   ENERGY_THRESHOLD,
 } from './scheduler.js';
+import { removeItem } from './loadout.js';
 
 // ---------- Actor construction ----------
 
@@ -67,7 +68,7 @@ export function makePlayerActor(opts = {}) {
       }
       return {
         spells: [...starterSpells, ...unlockedSpells],
-        consumables: ['itm_heal_run', 'itm_heal_run', 'itm_restore_run'],
+        consumables: { itm_heal_run: 2, itm_restore_run: 1 },
         wearables: [...unlockedWearables],
         equipped,
       };
@@ -226,10 +227,7 @@ async function executePlayerAction(action, actor, combat, hooks) {
     const target = action.targetId ? combat.actors.find(a => a.id === action.targetId) : null;
     combat.logFn(`${actor.name} runs ${item.name}.`);
     runEffectsAsActor(actor, item.effects || [], combat, { target });
-    // Remove first matching instance from loadout.consumables.
-    const list = actor.loadout?.consumables || [];
-    const idx = list.indexOf(action.itemId);
-    if (idx >= 0) list.splice(idx, 1);
+    if (actor.loadout?.consumables) removeItem(actor.loadout.consumables, action.itemId);
     return;
   }
   combat.logFn(`Unknown action kind: ${action.kind}`);

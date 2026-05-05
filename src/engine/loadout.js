@@ -2,7 +2,7 @@
 //
 // Player loadout shape:
 //   loadout.spells       : ids of currently-known cast scripts (per-run)
-//   loadout.consumables  : ids of carried single-use items (per-run, consumed)
+//   loadout.consumables  : { itemId: count } map of stackable single-use items
 //   loadout.wearables    : ids of wearables found this run, deduped (per-run)
 //   loadout.equipped     : { weapon, robe, amulet, ring1, ring2 } each id|null
 //
@@ -25,6 +25,52 @@ export function slotsFittingItem(itemDef) {
 
 export function emptyEquipped() {
   return { weapon: null, robe: null, amulet: null, ring1: null, ring2: null };
+}
+
+// ---------- Stackable bag helpers (consumables, future components) ----------
+//
+// A "bag" is a plain { id: count } object. Counts are positive integers; an
+// id with zero count is deleted, never left as 0 — pickers and totals rely on
+// `id in bag` being a truthful "do I have any" check.
+
+export function addItem(bag, id, n = 1) {
+  if (!bag || !id || n <= 0) return;
+  bag[id] = (bag[id] || 0) + n;
+}
+
+export function removeItem(bag, id, n = 1) {
+  if (!bag || !id || n <= 0) return false;
+  const have = bag[id] || 0;
+  if (have < n) return false;
+  const left = have - n;
+  if (left <= 0) delete bag[id];
+  else bag[id] = left;
+  return true;
+}
+
+export function itemCount(bag, id) {
+  return (bag && bag[id]) || 0;
+}
+
+export function totalItems(bag) {
+  if (!bag) return 0;
+  let s = 0;
+  for (const id in bag) s += bag[id];
+  return s;
+}
+
+export function hasItems(bag, recipe) {
+  if (!bag || !recipe) return false;
+  for (const id in recipe) {
+    if ((bag[id] || 0) < recipe[id]) return false;
+  }
+  return true;
+}
+
+export function spendItems(bag, recipe) {
+  if (!hasItems(bag, recipe)) return false;
+  for (const id in recipe) removeItem(bag, id, recipe[id]);
+  return true;
 }
 
 // Add a wearable id to the player's run-bag if not already present, and mark

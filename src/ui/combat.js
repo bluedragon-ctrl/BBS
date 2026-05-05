@@ -377,20 +377,19 @@ async function chooseSpell() {
 
 async function chooseItem() {
   const player = currentCombat.actors.find(a => a.isPlayer);
-  const list = player.loadout?.consumables || [];
-  if (!list.length) {
+  const bag = player.loadout?.consumables || {};
+  const ids = Object.keys(bag);
+  if (!ids.length) {
     deps.log('No items available.');
     return null;
   }
-  const counts = countBy(list);
-  const ids = Object.keys(counts);
   const choices = ids
     .map((id, i) => {
       const item = deps.data.item(id);
       if (!item) return null;
       return {
         key: String.fromCharCode(49 + i),
-        label: `${item.name} ×${counts[id]}`,
+        label: `${item.name} ×${bag[id]}`,
         detail: item.blurb || '',
         className: `school-${item.kind || 'consumable'}`,
         _itemId: id,
